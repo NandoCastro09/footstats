@@ -6,6 +6,7 @@ interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
+  className?: string;
 }
 
 export default function Button({
@@ -14,6 +15,7 @@ export default function Button({
   children,
   onClick,
   disabled = false,
+  className = "",
 }: ButtonProps) {
   const baseStyles =
     "font-medium rounded-lg transition-all duration-200 cursor-pointer";
@@ -35,7 +37,7 @@ export default function Button({
   return React.createElement(
     "button",
     {
-      className: `${baseStyles} ${variantStyles[finalVariant]} ${sizeStyles[size]}`,
+      className: `${baseStyles} ${variantStyles[finalVariant]} ${sizeStyles[size]} ${className}`,
       onClick,
       disabled,
     },

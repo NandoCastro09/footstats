@@ -1,5 +1,4 @@
 import React from "react";
-import Badge from "./Badge";
 import Button from "./Button";
 
 interface TeamCardProps {
@@ -129,11 +128,9 @@ export default function TeamCard({
       ),
 
       // Button
-      React.createElement(
-        Button,
-        { variant: "primary", size: "md", className: "w-full" },
-        "Ver Detalhes"
-      )
+      <Button variant="primary" size="md" className="w-full">
+        Ver Detalhes
+      </Button>
     )
   );
 }
