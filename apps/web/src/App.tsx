@@ -1,11 +1,16 @@
-﻿import Button from "./components/Button";
+﻿import { useState } from "react";
+import Button from "./components/Button";
 import Card from "./components/Card";
 import Badge from "./components/Badge";
 import MatchCard from "./components/MatchCard";
 import TeamCard from "./components/TeamCard";
 import LeagueTable from "./components/LeagueTable";
+import PlayerCard from "./components/PlayerCard";
+import Modal from "./components/Modal";
 
 export default function App() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const leagueTeams = [
     {
       position: 1,
@@ -137,6 +142,57 @@ export default function App() {
               goalsAgainst={20}
             />
           </div>
+        </section>
+
+        {/* PLAYER CARDS */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Jogadores</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <PlayerCard
+              name="Everton Ribeiro"
+              position="Meio-campo"
+              number={7}
+              goals={5}
+              assists={9}
+            />
+            <PlayerCard
+              name="Pedro"
+              position="Atacante"
+              number={9}
+              goals={18}
+              assists={4}
+              injured
+            />
+            <PlayerCard
+              name="Gerson"
+              position="Meio-campo"
+              number={8}
+              height="1.79m"
+              goals={3}
+              assists={6}
+            />
+          </div>
+        </section>
+
+        {/* MODAL */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Modal</h2>
+
+          <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+            Abrir Modal
+          </Button>
+
+          <Modal
+            isOpen={isModalOpen}
+            title="Confirmar ação"
+            onClose={() => setIsModalOpen(false)}
+            onConfirm={() => setIsModalOpen(false)}
+          >
+            <p className="text-gray-700">
+              Tem certeza que deseja continuar?
+            </p>
+          </Modal>
         </section>
 
         {/* LEAGUE TABLE */}
