@@ -1,17 +1,18 @@
-﻿{
+{
   "name": "footstats",
   "version": "1.0.0",
   "private": true,
-  "description": "Platform de estatísticas de futebol",
+  "description": "Plataforma de estatísticas de futebol",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
-    "format": "pnpm -r run format"
+    "format": "prettier --write \"apps/*/src/**/*.{ts,tsx,css}\""
   },
   "devDependencies": {
-    "prettier": "^3.0.0",
-    "eslint": "^8.0.0"
+    "prettier": "^3.0.0"
   }
 }
