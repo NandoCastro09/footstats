@@ -1,10 +1,9 @@
-﻿node_modules/
+node_modules/
 dist/
 build/
 .env
 .env.local
 .DS_Store
 *.log
-.next/
-out/
-pnpm-lock.yaml
+.vercel
+apps/api/scripts/.cache/
