@@ -1,136 +1,54 @@
-import React from "react";
-import Button from "./Button";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import Card from "./Card";
+import TeamCrest from "./TeamCrest";
+import { buttonBase, buttonSizes, buttonVariants } from "./styles";
+import { cn } from "../lib/cn";
+import type { Standing } from "../types";
 
 interface TeamCardProps {
-  name: string;
-  position: number;
-  points: number;
-  wins: number;
-  draws: number;
-  losses: number;
-  goalsFor: number;
-  goalsAgainst: number;
+  standing: Standing;
 }
 
-export default function TeamCard({
-  name,
-  position,
-  points,
-  wins,
-  draws,
-  losses,
-  goalsFor,
-  goalsAgainst,
-}: TeamCardProps) {
-  return React.createElement(
-    "div",
-    {
-      className:
-        "rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer",
-    },
-    // Header
-    React.createElement(
-      "div",
-      {
-        className:
-          "h-24 bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center",
-      },
-      React.createElement(
-        "div",
-        {
-          className:
-            "w-16 h-16 rounded-full bg-white flex items-center justify-center text-2xl font-bold text-blue-600",
-        },
-        name.charAt(0)
-      )
-    ),
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-control bg-surface-subtle p-2">
+      <dt className="text-xs uppercase text-ink-muted">{label}</dt>
+      <dd className="font-display text-lg font-bold tabular-nums text-ink">
+        {value}
+      </dd>
+    </div>
+  );
+}
 
-    // Content
-    React.createElement(
-      "div",
-      { className: "p-6 bg-white" },
-      // Title
-      React.createElement(
-        "h3",
-        { className: "text-xl font-bold text-gray-900 mb-2" },
-        name
-      ),
-      React.createElement(
-        "p",
-        { className: "text-sm text-gray-600 mb-4" },
-        `Posição: #${position}`
-      ),
+export default function TeamCard({ standing }: TeamCardProps) {
+  const { team, position, points, wins, draws, losses, goalsFor, goalsAgainst } =
+    standing;
 
-      // Stats Grid
-      React.createElement(
-        "div",
-        { className: "grid grid-cols-2 gap-3 mb-4" },
-        // Pontos
-        React.createElement(
-          "div",
-          { className: "bg-blue-50 rounded p-2" },
-          React.createElement(
-            "p",
-            { className: "text-xs text-gray-600 uppercase" },
-            "Pontos"
-          ),
-          React.createElement(
-            "p",
-            { className: "text-lg font-bold text-gray-900" },
-            points
-          )
-        ),
-        // V-E-D
-        React.createElement(
-          "div",
-          { className: "bg-green-50 rounded p-2" },
-          React.createElement(
-            "p",
-            { className: "text-xs text-gray-600 uppercase" },
-            "V-E-D"
-          ),
-          React.createElement(
-            "p",
-            { className: "text-lg font-bold text-gray-900" },
-            `${wins}-${draws}-${losses}`
-          )
-        ),
-        // Gols Pró
-        React.createElement(
-          "div",
-          { className: "bg-green-50 rounded p-2" },
-          React.createElement(
-            "p",
-            { className: "text-xs text-gray-600 uppercase" },
-            "Gols Pró"
-          ),
-          React.createElement(
-            "p",
-            { className: "text-lg font-bold text-green-600" },
-            goalsFor
-          )
-        ),
-        // Gols Contra
-        React.createElement(
-          "div",
-          { className: "bg-red-50 rounded p-2" },
-          React.createElement(
-            "p",
-            { className: "text-xs text-gray-600 uppercase" },
-            "Gols Contra"
-          ),
-          React.createElement(
-            "p",
-            { className: "text-lg font-bold text-red-600" },
-            goalsAgainst
-          )
-        )
-      ),
+  return (
+    <Card as="article" interactive className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <TeamCrest team={team} />
+        <div>
+          <h3 className="text-lg font-bold text-ink">{team.name}</h3>
+          <p className="text-sm text-ink-muted">{position}º colocado</p>
+        </div>
+      </div>
 
-      // Button
-      <Button variant="primary" size="md" className="w-full">
-        Ver Detalhes
-      </Button>
-    )
+      <dl className="grid grid-cols-2 gap-2">
+        <Stat label="Pontos" value={points} />
+        <Stat label="V-E-D" value={`${wins}-${draws}-${losses}`} />
+        <Stat label="Gols pró" value={goalsFor} />
+        <Stat label="Gols contra" value={goalsAgainst} />
+      </dl>
+
+      <Link
+        to={`/times/${team.id}`}
+        className={cn(buttonBase, buttonVariants.secondary, buttonSizes.md)}
+      >
+        Ver detalhes<span className="sr-only"> do {team.name}</span>
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </Link>
+    </Card>
   );
 }

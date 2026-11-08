@@ -1,7 +1,36 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #f9fafb;
+@layer base {
+  body {
+    @apply bg-surface-subtle font-sans text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+
+  /* Foco sempre visível (teclado). */
+  :focus-visible {
+    outline: 3px solid theme("colors.primary.DEFAULT");
+    outline-offset: 2px;
+  }
+
+  /* Em fundos azuis o contorno azul some: usa branco. */
+  .on-dark :focus-visible {
+    outline-color: #fff;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }

@@ -1,32 +1,41 @@
-import React from "react";
+import type { ReactNode } from "react";
+import { cn } from "../lib/cn";
+
+type BadgeVariant = "success" | "error" | "warning" | "live" | "info" | "default";
 
 interface BadgeProps {
-  variant?: "success" | "error" | "warning" | "live" | "default";
-  children: React.ReactNode;
+  variant?: BadgeVariant;
+  icon?: ReactNode;
+  children: ReactNode;
   className?: string;
 }
 
+// Todas as combinações texto/fundo passam no AA (≥ 4.5:1).
+const variantStyles: Record<BadgeVariant, string> = {
+  success: "bg-success-light text-success",
+  error: "bg-danger-light text-danger",
+  warning: "bg-warning-light text-warning-text",
+  live: "border border-live bg-live-light text-live-strong",
+  info: "bg-primary-light text-primary",
+  default: "border border-line bg-surface-subtle text-ink-muted",
+};
+
 export default function Badge({
   variant = "default",
+  icon,
   children,
-  className = "",
+  className,
 }: BadgeProps) {
-  const baseStyles =
-    "inline-block px-3 py-1 rounded-full text-sm font-medium transition-all";
-
-  const variantStyles = {
-    success: "bg-green-100 text-green-800",
-    error: "bg-red-100 text-red-800",
-    warning: "bg-amber-100 text-amber-800",
-    live: "bg-orange-100 text-orange-800 border border-orange-500",
-    default: "bg-gray-200 text-gray-800",
-  };
-
-  return React.createElement(
-    "span",
-    {
-      className: `${baseStyles} ${variantStyles[variant]} ${className}`,
-    },
-    children
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide",
+        variantStyles[variant],
+        className
+      )}
+    >
+      {icon}
+      {children}
+    </span>
   );
 }
