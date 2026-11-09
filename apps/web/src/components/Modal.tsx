@@ -101,7 +101,7 @@ export default function Modal({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-ink/60"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         aria-hidden="true"
         onClick={onClose}
       />
@@ -113,18 +113,18 @@ export default function Modal({
         aria-describedby={bodyId}
         tabIndex={-1}
         className={cn(
-          "relative w-full overflow-hidden rounded-card bg-white shadow-2xl",
+          "relative w-full overflow-hidden rounded-card border border-line bg-surface shadow-hero",
           sizeStyles[size]
         )}
       >
-        <div className="flex items-center justify-between gap-4 border-b border-line bg-primary-light px-6 py-4">
-          <h2 id={titleId} className="text-xl font-bold text-primary">
+        <div className="flex items-center justify-between gap-4 border-b border-line px-6 py-4">
+          <h2 id={titleId} className="text-xl font-bold text-ink">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-control text-ink hover:bg-white"
+            className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-control text-ink-soft hover:bg-surface-raised hover:text-ink"
           >
             <X className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Fechar</span>
@@ -135,7 +135,7 @@ export default function Modal({
           {children}
         </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-line bg-surface-subtle px-6 py-4 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-2 border-t border-line bg-surface-raised px-6 py-4 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onClose} data-autofocus>
             {cancelText}
           </Button>

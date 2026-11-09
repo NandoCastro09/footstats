@@ -6,6 +6,7 @@ import type { PredictionInput } from "../types";
 export const queryKeys = {
   matches: (filters: MatchFilters = {}) => ["matches", filters] as const,
   match: (id: string) => ["matches", "detail", id] as const,
+  matchDetails: (id: string) => ["matches", "details", id] as const,
   competitions: ["competitions"] as const,
   standings: (competition: string) => ["standings", competition] as const,
   team: (id: string) => ["teams", id] as const,
@@ -20,6 +21,15 @@ export function useMatches(filters: MatchFilters = {}) {
     queryKey: queryKeys.matches(filters),
     queryFn: () => api.matches.list(filters),
     placeholderData: (previous) => previous, // mantém a lista ao trocar filtro
+  });
+}
+
+/** Partida com estatísticas, escalações e eventos; ao vivo, atualiza a cada minuto. */
+export function useMatchDetails(id: string) {
+  return useQuery({
+    queryKey: queryKeys.matchDetails(id),
+    queryFn: () => api.matches.details(id),
+    refetchInterval: (query) => (query.state.data?.match.status === "live" ? 60_000 : false),
   });
 }
 

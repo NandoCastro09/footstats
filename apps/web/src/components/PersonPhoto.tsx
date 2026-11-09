@@ -41,7 +41,7 @@ export default function PersonPhoto({
         loading="lazy"
         decoding="async"
         onError={() => setFailed(true)}
-        className={cn("shrink-0 rounded-full border-2 border-primary-light bg-surface-subtle object-cover", box, className)}
+        className={cn("shrink-0 rounded-full border border-line-strong bg-surface-raised object-cover", box, className)}
       />
     );
   }
@@ -51,7 +51,7 @@ export default function PersonPhoto({
       role="img"
       aria-label={fallbackLabel ?? `Iniciais de ${name}`}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-full bg-primary font-display font-bold text-white",
+        "inline-flex shrink-0 items-center justify-center rounded-full bg-primary-solid font-display font-bold text-white",
         box,
         className
       )}

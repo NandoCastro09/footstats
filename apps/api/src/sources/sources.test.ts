@@ -118,6 +118,19 @@ describe("football-data.org: conversão", () => {
       .toMatchObject({ name: "Coritiba", shortName: "CFC" });
   });
 
+  it("usa o escudo atual da API-Football, salvo as exceções", () => {
+    const fd = (id: number) => `https://crests.football-data.org/${id}.png`;
+    // Athletico-PR: o da football-data.org é o escudo antigo (antes de 2018).
+    expect(toSummary({ id: 1768, name: "CA Paranaense", shortName: "Athletico", tla: "CAP", crest: fd(1768) }).crest)
+      .toBe("https://media.api-sports.io/football/teams/134.png");
+    // Juventus está na lista de exceções: mantém o da football-data.org.
+    expect(toSummary({ id: 109, name: "Juventus FC", shortName: "Juventus", tla: "JUV", crest: fd(109) }).crest)
+      .toBe(fd(109));
+    // Time sem ligação com a API-Football: mantém o da football-data.org.
+    expect(toSummary({ id: 999999, name: "Time X", shortName: "X", tla: "XXX", crest: fd(999999) }).crest)
+      .toBe(fd(999999));
+  });
+
   it("calcula idade considerando o aniversário", () => {
     expect(ageOn("1997-06-20", NOW)).toBe(29);
     expect(ageOn("1995-11-10", NOW)).toBe(30);
@@ -134,7 +147,8 @@ describe("football-data.org: conversão", () => {
       status: "live",
       homeScore: 1,
       awayScore: 0,
-      homeTeam: { id: "1783", name: "Flamengo", shortName: "FLA", crest: fla.crest },
+      // Flamengo está ligado à API-Football (id 127): o escudo vem de lá.
+      homeTeam: { id: "1783", name: "Flamengo", shortName: "FLA", crest: "https://media.api-sports.io/football/teams/127.png" },
       venue: "Estadio Jornalista Mário Filho", // vem do cadastro do time mandante
     });
     expect(matches.find((m) => m.id === "4")).toMatchObject({ homeScore: null, awayScore: null });

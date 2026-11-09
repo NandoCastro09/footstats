@@ -49,3 +49,37 @@ export function maskEmail(email: string) {
 export function formatGoalDifference(value: number) {
   return value > 0 ? `+${value}` : String(value);
 }
+
+/** Minuto de jogo: 67 → "67'", 45 + 2 → "45+2'". */
+export function formatMinute(minute: number, extra?: number | null) {
+  return extra ? `${minute}+${extra}'` : `${minute}'`;
+}
+
+const decimalFormatter = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+
+/** Valor de estatística: 56 → "56%", 1.81 → "1,81", 14 → "14". */
+export function formatStat(value: number | null, format: "number" | "percent" | "decimal") {
+  if (value === null) return "—";
+  if (format === "percent") return `${Math.round(value)}%`;
+  if (format === "decimal") return decimalFormatter.format(value);
+  return String(value);
+}
+
+/** Nota do jogador: 7.85 → "7,9". */
+export function formatRating(value: number) {
+  return value.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
+const longDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: TIME_ZONE,
+});
+
+/** Ex.: "sábado, 14 de novembro, 18:30" */
+export function formatLongKickoff(iso: string) {
+  return longDateFormatter.format(new Date(iso));
+}

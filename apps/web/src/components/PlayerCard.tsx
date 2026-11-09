@@ -10,8 +10,8 @@ interface PlayerCardProps {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-control bg-surface-subtle p-2 text-center">
-      <dt className="text-xs text-ink-muted">{label}</dt>
+    <div className="rounded-control bg-surface-raised p-2 text-center">
+      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-ink-muted">{label}</dt>
       <dd className="font-display text-lg font-bold tabular-nums text-ink">{value}</dd>
     </div>
   );

@@ -2,7 +2,6 @@ import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronUp, Crown, Goal, Shield, Swords } from "lucide-react";
 import Button from "../components/Button";
-import Card from "../components/Card";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import LeagueTable from "../components/LeagueTable";
@@ -27,22 +26,22 @@ function Highlight({
   value: string;
 }) {
   return (
-    <Card as="li" variant="stat" className="flex items-center gap-3">
+    <li className="flex items-center gap-3">
       <TeamCrest team={standing.team} />
       <div className="min-w-0">
-        <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        <p className="eyebrow flex items-center gap-1 text-white/80">
           {icon}
           {label}
         </p>
         <Link
           to={`/times/${standing.team.id}`}
-          className="block truncate font-display text-lg font-bold text-ink hover:text-primary hover:underline"
+          className="block truncate rounded-control font-display text-lg font-bold text-white hover:underline"
         >
           {standing.team.name}
         </Link>
-        <p className="text-sm text-ink">{value}</p>
+        <p className="text-sm text-white/90">{value}</p>
       </div>
-    </Card>
+    </li>
   );
 }
 
@@ -66,8 +65,8 @@ function LeagueScorers() {
 
   return (
     <section aria-labelledby="artilharia" className="space-y-4">
-      <h2 id="artilharia" className="flex items-center gap-2 text-2xl font-bold text-ink">
-        <Goal className="h-6 w-6 text-success" aria-hidden="true" />
+      <h2 id="artilharia" className="eyebrow flex items-center gap-2">
+        <Goal className="h-4 w-4 text-success" aria-hidden="true" />
         Artilharia
       </h2>
       {isPending ? (
@@ -132,7 +131,11 @@ export default function StandingsPage() {
         <EmptyState title="Classificação indisponível" description="Nenhum time cadastrado." />
       ) : (
         <>
-          <section aria-labelledby="destaques">
+          {/* Faixa em degradê, como o cabeçalho de campeonato do protótipo. */}
+          <section
+            aria-labelledby="destaques"
+            className="on-dark rounded-card bg-gradient-hero p-5 shadow-hero sm:p-6"
+          >
             <h2 id="destaques" className="sr-only">
               Destaques
             </h2>
@@ -140,7 +143,7 @@ export default function StandingsPage() {
               const { leader, bestAttack, bestDefense } = highlights(standings);
               const iconClass = "h-3.5 w-3.5";
               return (
-                <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <ul className="grid grid-cols-1 gap-5 sm:grid-cols-3">
                   <Highlight
                     icon={<Crown className={iconClass} aria-hidden="true" />}
                     label="Líder"

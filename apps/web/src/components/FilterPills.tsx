@@ -31,15 +31,15 @@ export default function FilterPills<T extends string>({
 }: FilterPillsProps<T>) {
   return (
     <fieldset className={className}>
-      <legend className="mb-2 text-sm font-medium text-ink">{legend}</legend>
+      <legend className="eyebrow mb-2">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <label
             key={option.value}
             className={cn(
               "inline-flex min-h-touch cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
-              "border-line-strong bg-white text-ink hover:border-primary hover:bg-primary-light",
-              "has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-white",
+              "border-line bg-surface-raised text-ink-soft hover:border-primary hover:text-ink",
+              "has-[:checked]:border-primary-solid has-[:checked]:bg-primary-solid has-[:checked]:font-semibold has-[:checked]:text-white",
               "has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary"
             )}
           >

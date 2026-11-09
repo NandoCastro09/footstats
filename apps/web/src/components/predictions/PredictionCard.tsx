@@ -45,12 +45,12 @@ export default function PredictionCard({
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-3 rounded-control bg-surface-subtle p-3">
+      <div className="flex items-center justify-center gap-3 rounded-control bg-surface-raised p-3">
         <TeamCrest team={match.homeTeam} size="sm" />
         <p className="font-display text-2xl font-bold tabular-nums text-ink">
           {homeGoals}
           <span className="mx-1 text-ink-muted" aria-hidden="true">
-            x
+            –
           </span>
           {awayGoals}
         </p>
@@ -65,7 +65,7 @@ export default function PredictionCard({
       </p>
 
       {prediction.comment && (
-        <blockquote className="border-l-4 border-primary-light pl-3 text-sm italic text-ink">
+        <blockquote className="border-l-4 border-primary/40 pl-3 text-sm italic text-ink">
           “{prediction.comment}”
         </blockquote>
       )}

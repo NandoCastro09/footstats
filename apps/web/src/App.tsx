@@ -8,6 +8,7 @@ import MatchesPage from "./pages/MatchesPage";
 // formulário (zod + react-hook-form) nem das outras telas.
 const StandingsPage = lazy(() => import("./pages/StandingsPage"));
 const TeamPage = lazy(() => import("./pages/TeamPage"));
+const MatchPage = lazy(() => import("./pages/MatchPage"));
 const PredictionsPage = lazy(() => import("./pages/PredictionsPage"));
 const ComponentsPage = lazy(() => import("./pages/ComponentsPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
@@ -20,6 +21,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<MatchesPage />} />
           <Route path="classificacao" element={<StandingsPage />} />
+          <Route path="partidas/:id" element={<MatchPage />} />
           <Route path="times/:id" element={<TeamPage />} />
           <Route path="palpites" element={<PredictionsPage />} />
           <Route path="ligas" element={<LeaguesPage />} />

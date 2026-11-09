@@ -37,8 +37,10 @@ export default function LeaguesPage() {
                   to={`/?liga=${competition.code}`}
                   aria-current={selected ? "true" : undefined}
                   className={cn(
-                    "flex h-full items-center gap-4 rounded-card border bg-white p-4 shadow-sm transition-shadow hover:shadow-md",
-                    selected ? "border-2 border-primary" : "border-line"
+                    "flex h-full items-center gap-4 rounded-card border bg-surface p-4 transition-colors",
+                    selected
+                      ? "border-2 border-primary bg-primary-light/50"
+                      : "border-line hover:border-line-strong"
                   )}
                 >
                   <img
@@ -47,7 +49,7 @@ export default function LeaguesPage() {
                     width={56}
                     height={56}
                     loading="lazy"
-                    className="h-14 w-14 shrink-0 object-contain"
+                    className="logo-outline h-14 w-14 shrink-0 object-contain"
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block font-display text-lg font-bold text-ink">

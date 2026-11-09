@@ -8,8 +8,9 @@ export default function LeagueSelect({ className }: { className?: string }) {
   const id = useId();
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <label htmlFor={id} className="text-sm font-medium text-white">
+    <div className={cn("flex items-center justify-end gap-2", className)}>
+      {/* Em telas estreitas o rótulo some da vista, mas continua para leitores de tela. */}
+      <label htmlFor={id} className="eyebrow sr-only sm:not-sr-only">
         Liga
       </label>
       <select
@@ -17,7 +18,7 @@ export default function LeagueSelect({ className }: { className?: string }) {
         value={code}
         onChange={(event) => setLeague(event.target.value)}
         disabled={competitions.length === 0}
-        className="min-h-touch w-full min-w-0 rounded-control border border-white/50 bg-primary-dark px-3 text-sm font-medium text-white hover:border-white md:w-56"
+        className="min-h-touch w-full min-w-0 rounded-full border border-line-strong bg-surface-raised px-4 text-sm font-medium text-ink hover:border-primary md:w-60"
       >
         {competitions.length === 0 ? (
           <option value={code}>Carregando ligas…</option>

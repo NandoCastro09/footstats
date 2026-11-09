@@ -22,7 +22,7 @@ export default function DemoBanner() {
         <button
           type="button"
           onClick={() => setDemoSettings({ error: "off", delay: 0 })}
-          className="min-h-touch rounded-control px-2 font-semibold underline hover:bg-white/60"
+          className="min-h-touch rounded-control px-2 font-semibold underline hover:bg-white/10"
         >
           Desativar
         </button>

@@ -12,7 +12,7 @@ export default function EmptyState({ title, description, icon, action }: EmptySt
   return (
     <div
       role="status"
-      className="flex flex-col items-center gap-3 rounded-card border border-dashed border-line-strong bg-white px-6 py-10 text-center"
+      className="flex flex-col items-center gap-3 rounded-card border border-dashed border-line-strong bg-surface px-6 py-10 text-center"
     >
       {icon ?? <SearchX className="h-10 w-10 text-ink-muted" aria-hidden="true" />}
       <div>

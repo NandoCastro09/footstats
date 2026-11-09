@@ -3,8 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Controles nativos (select, scrollbar, date) no modo escuro. */
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-surface-subtle font-sans text-ink antialiased;
+    /* Raleway usa algarismos "antigos" por padrão; números alinhados leem melhor. */
+    font-feature-settings: "lnum";
   }
 
   h1,
@@ -12,6 +19,15 @@
   h3,
   h4 {
     @apply font-display;
+  }
+
+  /* Enquanto a imagem carrega, o Firefox escreve o texto alternativo ("Escudo do
+     Liverpool") por cima do layout. Texto transparente e corte escondem isso sem
+     tirar o alt dos leitores de tela. Se a imagem falhar, os componentes trocam
+     por sigla ou iniciais (onError). */
+  img {
+    color: transparent;
+    overflow: hidden;
   }
 
   /* Foco sempre visível (teclado). */
@@ -32,5 +48,20 @@
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+@layer components {
+  /* Rótulo de seção do protótipo: "PRÓXIMOS JOGOS", "ELENCO"… */
+  .eyebrow {
+    @apply font-sans text-xs font-semibold uppercase tracking-label text-ink-muted;
+  }
+}
+
+@layer utilities {
+  /* Escudos e emblemas com partes pretas somem no fundo escuro: um contorno
+     claro de 1px mantém a silhueta visível sem mudar a imagem. */
+  .logo-outline {
+    filter: drop-shadow(0 0 1px rgba(243, 242, 237, 0.5));
   }
 }

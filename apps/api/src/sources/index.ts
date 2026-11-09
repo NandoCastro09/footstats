@@ -28,10 +28,15 @@ export function createDataSource(env: Env, log: Pick<FastifyBaseLogger, "warn" |
     ? createApiFootballEnrichment({ fetchJson: createApiFootballFetch(env.API_FOOTBALL_KEY) })
     : undefined;
   log.info(
-    `Fonte de dados: football-data.org${enrichment ? " + API-Football (fotos e técnicos)" : ""}, com reserva em mock.`
+    `Fonte de dados: football-data.org${enrichment ? " + API-Football (fotos, técnicos e detalhes de partida)" : ""}, com reserva em mock.`
   );
   return withFallback(
-    createFootballDataSource({ fetchJson: createFootballDataFetch(token), enrichment }),
+    createFootballDataSource({
+      fetchJson: createFootballDataFetch(token),
+      enrichment,
+      onDetailsError: (err, matchId) =>
+        log.warn({ err }, `Detalhes da partida ${matchId} indisponíveis (API-Football); exibindo o básico.`),
+    }),
     mock,
     log
   );

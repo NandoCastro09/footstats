@@ -12,8 +12,8 @@ interface TeamCardProps {
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-control bg-surface-subtle p-2">
-      <dt className="text-xs uppercase text-ink-muted">{label}</dt>
+    <div className="rounded-control bg-surface-raised p-2">
+      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-ink-muted">{label}</dt>
       <dd className="font-display text-lg font-bold tabular-nums text-ink">
         {value}
       </dd>

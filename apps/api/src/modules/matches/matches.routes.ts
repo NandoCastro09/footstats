@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { matchParamsSchema, matchesQuerySchema } from "./matches.schemas.js";
-import { getMatch, listMatches } from "./matches.service.js";
+import { getMatch, getMatchDetails, listMatches } from "./matches.service.js";
 import { resolveCompetition } from "../../lib/competition.js";
 
 export async function matchesRoutes(app: FastifyInstance) {
@@ -15,5 +15,11 @@ export async function matchesRoutes(app: FastifyInstance) {
   app.get("/matches/:id", async (request) => {
     const { id } = matchParamsSchema.parse(request.params);
     return { data: await getMatch(app.dataSource, id) };
+  });
+
+  // GET /api/matches/:id/details — estatísticas, escalações e eventos
+  app.get("/matches/:id/details", async (request) => {
+    const { id } = matchParamsSchema.parse(request.params);
+    return { data: await getMatchDetails(app.dataSource, id) };
   });
 }

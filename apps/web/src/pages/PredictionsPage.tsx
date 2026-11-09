@@ -55,7 +55,7 @@ export default function PredictionsPage() {
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <section
           aria-labelledby="form-title"
-          className="rounded-card border border-line bg-white p-4 shadow-sm sm:p-6 lg:sticky lg:top-4"
+          className="rounded-card border border-line bg-surface p-4 sm:p-6 lg:sticky lg:top-20"
         >
           <h2 id="form-title" className="mb-2 text-xl font-bold text-ink">
             {editing ? "Editar palpite" : "Novo palpite"}
@@ -69,11 +69,11 @@ export default function PredictionsPage() {
         </section>
 
         <section aria-labelledby="lista-title" className="space-y-4">
-          <h2 id="lista-title" className="text-xl font-bold text-ink">
+          <h2 id="lista-title" className="eyebrow">
             Palpites enviados
             {predictionsQuery.isSuccess && (
-              <span className="ml-2 text-base font-normal text-ink-muted">
-                ({predictions.length})
+              <span className="ml-1 font-medium">
+                · {predictions.length}
               </span>
             )}
           </h2>

@@ -2,6 +2,7 @@ import type {
   Coach,
   FormResult,
   Match,
+  MatchDetails,
   MatchStatus,
   Player,
   PlayerPosition,
@@ -12,7 +13,7 @@ import type {
 } from "../types.js";
 import { coachOverrides } from "../data/coach-overrides.js";
 import { competitionCodes, listCompetitionInfo } from "../data/competitions.js";
-import { teamLinks } from "../data/team-links.js";
+import { crestFor, teamLinks } from "../data/team-links.js";
 import { createCache } from "../lib/cache.js";
 import { samePerson } from "../lib/names.js";
 import type { TeamEnrichment } from "./api-football.js";
@@ -32,6 +33,8 @@ const TTL = {
 };
 const FORM_LENGTH = 5;
 const DAY = 24 * 60 * 60_000;
+/** Escalações saem ~1 h antes: antes disso não vale gastar requisição da API-Football. */
+const LINEUPS_WINDOW = 90 * 60_000;
 
 // ---- Formato das respostas (só os campos usados) ----
 
@@ -143,10 +146,11 @@ export function mapStatus(status: string): MatchStatus | null {
 /**
  * Ajustes de nomes e siglas, por id: a football-data.org chama o Atlético-MG
  * de "Mineiro", usa "FBP" para o Grêmio e "COR" para Corinthians E Coritiba.
+ * O nome completo do Athletico ainda é o antigo ("CA Paranaense", até 2018).
  */
-const teamOverrides: Record<number, { name?: string; tla?: string }> = {
-  1766: { name: "Atlético-MG" },
-  1768: { name: "Athletico-PR" },
+const teamOverrides: Record<number, { name?: string; tla?: string; fullName?: string }> = {
+  1766: { name: "Atlético-MG", fullName: "Clube Atlético Mineiro" },
+  1768: { name: "Athletico-PR", fullName: "Club Athletico Paranaense" },
   1767: { tla: "GRE" },
   1776: { tla: "SAO" },
   4241: { tla: "CFC" },
@@ -158,7 +162,7 @@ export function toSummary(team: FdTeamRef): TeamSummary {
     id: String(team.id),
     name: override.name ?? team.shortName ?? team.name,
     shortName: override.tla ?? team.tla ?? team.name.slice(0, 3).toUpperCase(),
-    crest: team.crest ?? null,
+    crest: crestFor(String(team.id), team.crest ?? null),
   };
 }
 
@@ -296,6 +300,8 @@ interface FootballDataOptions {
   competitions?: readonly string[];
   /** API-Football: elenco com fotos e técnicos. Opcional; sem ela, usa o elenco da football-data.org. */
   enrichment?: TeamEnrichment;
+  /** Avisado quando os detalhes de partida (API-Football) falham; a página segue com o básico. */
+  onDetailsError?: (error: unknown, matchId: string) => void;
 }
 
 export function createFootballDataSource({
@@ -303,6 +309,7 @@ export function createFootballDataSource({
   now = Date.now,
   enrichment,
   competitions = competitionCodes,
+  onDetailsError,
 }: FootballDataOptions): DataSource {
   const cache = createCache(now);
   const path = (code: string) => `/competitions/${code}`;
@@ -426,7 +433,7 @@ export function createFootballDataSource({
     ...(enrichment ? [{ name: "API-Football", url: "https://www.api-football.com" }] : []),
   ];
 
-  return {
+  const source: DataSource = {
     info: () => ({
       name: "football-data",
       attribution: `Dados fornecidos por ${providers.map((p) => p.name).join(" e ")}`,
@@ -458,6 +465,45 @@ export function createFootballDataSource({
       }
     },
 
+    getMatchDetails: async (id) => {
+      const match = await source.findMatch(id);
+      if (!match) return null;
+      const details: MatchDetails = {
+        match,
+        phase: null,
+        extraMinute: null,
+        halfTime: null,
+        referee: null,
+        statistics: [],
+        lineups: null,
+        events: [],
+        detailed: Boolean(enrichment),
+      };
+      if (!enrichment) return details;
+      if (match.status === "scheduled" && Date.parse(match.kickoff) - now() > LINEUPS_WINDOW) {
+        return details; // ainda sem escalação: nada a buscar
+      }
+
+      // Detalhes são complemento: se a API-Football falhar (limite, fora do ar),
+      // a página sai com o básico da football-data.org em vez de dar erro.
+      const extra = await enrichment.matchDetails(match).catch((error: unknown) => {
+        onDetailsError?.(error, id);
+        return undefined;
+      });
+      if (extra === undefined || extra === null) return { ...details, detailed: false };
+
+      const { status, homeScore, awayScore, minute, ...rest } = extra;
+      // Placar e minuto da mesma fonte dos eventos (senão "2 x 1" com 3 gols na lista).
+      const fresh = status !== null && status !== "scheduled";
+      return {
+        ...details,
+        ...rest,
+        match: fresh
+          ? { ...match, status, homeScore: homeScore ?? match.homeScore, awayScore: awayScore ?? match.awayScore, minute }
+          : match,
+      };
+    },
+
     listStandings: loadStandings,
 
     listScorers: loadScorers,
@@ -484,7 +530,7 @@ export function createFootballDataSource({
 
       const result: Team = {
         ...toSummary(team),
-        fullName: team.name,
+        fullName: teamOverrides[team.id]?.fullName ?? team.name,
         competition,
         city: teamLinks[id]?.city ?? "",
         stadium: team.venue ?? "",
@@ -496,4 +542,5 @@ export function createFootballDataSource({
       return result;
     },
   };
+  return source;
 }

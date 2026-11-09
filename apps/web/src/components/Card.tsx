@@ -11,9 +11,10 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
 }
 
 const variantStyles = {
-  default: "border-line bg-white",
-  stat: "border-primary-light bg-primary-light",
-  live: "border-live bg-white",
+  default: "border-line bg-surface",
+  stat: "border-line bg-surface",
+  // Partida ao vivo: degradê azul do protótipo, texto branco (contorno de foco branco).
+  live: "on-dark border-transparent bg-gradient-live text-white shadow-hero",
 };
 
 export default function Card({
@@ -27,9 +28,9 @@ export default function Card({
   return (
     <Component
       className={cn(
-        "rounded-card border p-4 shadow-sm",
+        "rounded-card border p-4",
         variantStyles[variant],
-        interactive && "transition-shadow duration-200 hover:shadow-md",
+        interactive && "transition-colors duration-200 hover:border-line-strong",
         className
       )}
       {...props}

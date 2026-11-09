@@ -3,6 +3,7 @@ import type {
   Competition,
   DataSourceInfo,
   Match,
+  MatchDetails,
   MatchStatus,
   Prediction,
   PredictionInput,
@@ -126,6 +127,8 @@ export const api = {
     list: (filters: MatchFilters = {}) =>
       request<Match[]>(`/api/matches${toQuery({ ...filters })}`),
     get: (id: string) => request<Match>(`/api/matches/${encodeURIComponent(id)}`),
+    details: (id: string) =>
+      request<MatchDetails>(`/api/matches/${encodeURIComponent(id)}/details`),
   },
   competitions: {
     list: () => request<Competition[]>("/api/competitions"),

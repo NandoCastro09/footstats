@@ -15,9 +15,10 @@ const variantStyles: Record<BadgeVariant, string> = {
   success: "bg-success-light text-success",
   error: "bg-danger-light text-danger",
   warning: "bg-warning-light text-warning-text",
-  live: "border border-live bg-live-light text-live-strong",
-  info: "bg-primary-light text-primary",
-  default: "border border-line bg-surface-subtle text-ink-muted",
+  // Pílula sólida, como o "AO VIVO" do protótipo (branco sobre coral escuro: 5.7:1).
+  live: "rounded-full bg-live-strong text-white",
+  info: "bg-primary-light text-primary-bright",
+  default: "border border-line bg-surface-raised text-ink-soft",
 };
 
 export default function Badge({
@@ -29,7 +30,7 @@ export default function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide",
+        "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold uppercase leading-none tracking-[0.08em]",
         variantStyles[variant],
         className
       )}

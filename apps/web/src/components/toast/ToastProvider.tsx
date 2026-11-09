@@ -41,7 +41,8 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
       {/* Região sempre presente: leitores de tela anunciam o que entra nela. */}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2 p-4 sm:items-end"
+        // pb-24: no mobile, acima da barra de navegação inferior.
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2 p-4 pb-24 sm:items-end lg:pb-4"
       >
         {toasts.map((toast) => {
           const { icon: Icon, className, iconClass } = styles[toast.variant];
@@ -50,7 +51,7 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
               key={toast.id}
               role={toast.variant === "error" ? "alert" : "status"}
               className={cn(
-                "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-card border-l-4 bg-white p-4 shadow-lg",
+                "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-card border border-l-4 border-line bg-surface-raised p-4 shadow-hero",
                 className
               )}
             >
@@ -64,7 +65,7 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => dismiss(toast.id)}
-                className="-m-2 inline-flex min-h-touch min-w-touch items-center justify-center rounded-control text-ink-muted hover:bg-surface-subtle hover:text-ink"
+                className="-m-2 inline-flex min-h-touch min-w-touch items-center justify-center rounded-control text-ink-muted hover:bg-surface hover:text-ink"
               >
                 <X className="h-4 w-4" aria-hidden="true" />
                 <span className="sr-only">Fechar aviso</span>

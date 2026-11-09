@@ -9,8 +9,8 @@ Projeto da disciplina **Programação para Interface de Usuário**, UNIJUÍ, 202
 
 | | Link |
 |---|---|
-| 🌐 **Aplicação em produção** | **https://SEU-PROJETO.vercel.app** <!-- TODO: link da Vercel --> |
-| 🔌 API em produção | https://SUA-API.onrender.com/health <!-- TODO: link do Render --> |
+| 🌐 **Aplicação em produção** | **https://footstats-beige.vercel.app** |
+| 🔌 API em produção | https://footstats-api.onrender.com/health |
 
 > A API usa o plano gratuito do Render e entra em repouso depois de 15 minutos sem uso.
 > O primeiro acesso seguinte pode levar até cerca de 1 minuto. Se a tela de erro aparecer,
@@ -381,10 +381,8 @@ O passo a passo completo, com os campos de cada painel, está em
 
 ## Integrantes
 
-<!-- TODO: preencher -->
-
 | Nome | GitHub | Responsabilidade |
 |---|---|---|
-| Nando | [@NandoCastro09](https://github.com/NandoCastro09) | _a definir_ |
-| _Nome_ | [@usuario](https://github.com/usuario) | _a definir_ |
-| _Nome_ | [@usuario](https://github.com/usuario) | _a definir_ |
+| Nando | [@NandoCastro09](https://github.com/NandoCastro09) | Configuração do monorepo, telas do front, formulário de palpites, acessibilidade, README e deploy |
+| Eduardo Kroth | [@Kroth09](https://github.com/Kroth09) | Design system e componentes base (Button, Card, Badge, MatchCard, TeamCard, LeagueTable) |
+| Rogério | [@Rog3rinS](https://github.com/Rog3rinS) | API REST: integração com as fontes de dados, palpites e tratamento de erros |

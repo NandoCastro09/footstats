@@ -37,3 +37,29 @@ export const teamLinks: Record<string, { apiFootballId: number; city: string }> 
   ...generatedTeamLinks,
   ...brasileiraoLinks,
 };
+
+/**
+ * Times em que o escudo da football-data.org é melhor que o da API-Football
+ * (conferidos lado a lado em 08/11/2026). Nos demais, o da API-Football é igual
+ * ou mais atual: o da football-data.org do Athletico-PR, por exemplo, é o de
+ * antes de 2018.
+ */
+const keepFootballDataCrest = new Set([
+  "109", // Juventus: o da API-Football é branco e some no fundo claro
+  "454", // Venezia
+  "676", // Utrecht: o da API-Football é a versão comemorativa de 50 anos
+  "678", // Ajax
+  "5530", // Santa Clara
+  "5533", // Gil Vicente
+]);
+
+/**
+ * Escudo do time. Usa o da API-Football quando o time está ligado: é mais atual
+ * e vem de uma CDN rápida (a football-data.org leva de 1 a 2,5 s por imagem).
+ * A URL é pública e não gasta a cota da API-Football.
+ */
+export function crestFor(teamId: string, footballDataCrest: string | null): string | null {
+  const link = teamLinks[teamId];
+  if (!link || keepFootballDataCrest.has(teamId)) return footballDataCrest;
+  return `https://media.api-sports.io/football/teams/${link.apiFootballId}.png`;
+}

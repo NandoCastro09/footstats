@@ -29,17 +29,18 @@ const positionOptions: Array<{ value: PositionFilter; label: string }> = [
   { value: "Atacante", label: "Atacantes" },
 ];
 
+/** Técnico em "vidro" sobre o degradê do cabeçalho (texto branco: o cinza não teria contraste). */
 function CoachCard({ coach }: { coach: Coach }) {
   const details = [coach.nationality, coach.age !== null && `${coach.age} anos`].filter(Boolean);
   return (
-    <Card className="flex items-center gap-3 self-start sm:ml-auto">
+    <div className="flex items-center gap-3 self-start rounded-card border border-white/20 bg-white/10 p-4 sm:ml-auto">
       <PersonPhoto name={coach.name} photo={coach.photo} />
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Técnico</p>
-        <p className="font-display text-lg font-bold text-ink">{coach.name}</p>
-        {details.length > 0 && <p className="text-sm text-ink-muted">{details.join(" · ")}</p>}
+        <p className="eyebrow text-white/80">Técnico</p>
+        <p className="font-display text-lg font-bold text-white">{coach.name}</p>
+        {details.length > 0 && <p className="text-sm text-white/80">{details.join(" · ")}</p>}
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -50,11 +51,11 @@ function TeamScorers({ teamId, competition }: { teamId: string; competition: str
   return (
     <section aria-labelledby="artilheiros" className="space-y-4">
       <div>
-        <h2 id="artilheiros" className="flex items-center gap-2 text-xl font-bold text-ink">
-          <Goal className="h-5 w-5 text-success" aria-hidden="true" />
+        <h2 id="artilheiros" className="eyebrow flex items-center gap-2">
+          <Goal className="h-4 w-4 text-success" aria-hidden="true" />
           Artilheiros do time
         </h2>
-        <p className="text-sm text-ink-muted">Jogadores do time entre os 100 maiores artilheiros do campeonato.</p>
+        <p className="mt-1 text-sm text-ink-muted">Jogadores do time entre os 100 maiores artilheiros do campeonato.</p>
       </div>
       {isPending ? (
         <Skeleton className="h-48 rounded-card" />
@@ -85,25 +86,33 @@ function StatsGrid({ standing }: { standing: Standing }) {
   const efficiency = standing.played
     ? Math.round((standing.points / (standing.played * 3)) * 100)
     : 0;
-  const stats = [
+  const diff = standing.goalDifference;
+  // Cores de destaque do protótipo: azul para ataque/pontos, verde para aproveitamento.
+  const stats: Array<{ label: string; value: string | number; tone?: string }> = [
     { label: "Posição", value: `${standing.position}º` },
-    { label: "Pontos", value: standing.points },
+    { label: "Pontos", value: standing.points, tone: "text-primary" },
     { label: "Jogos", value: standing.played },
     { label: "V-E-D", value: `${standing.wins}-${standing.draws}-${standing.losses}` },
-    { label: "Gols pró", value: standing.goalsFor },
+    { label: "Gols pró", value: standing.goalsFor, tone: "text-primary" },
     { label: "Gols contra", value: standing.goalsAgainst },
-    { label: "Saldo", value: formatGoalDifference(standing.goalDifference) },
-    { label: "Aproveitamento", value: `${efficiency}%` },
+    {
+      label: "Saldo",
+      value: formatGoalDifference(diff),
+      tone: diff > 0 ? "text-success" : diff < 0 ? "text-danger" : undefined,
+    },
+    { label: "Aproveitamento", value: `${efficiency}%`, tone: "text-success" },
   ];
 
   return (
     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {stats.map((stat) => (
-        <Card key={stat.label} variant="stat" className="p-3">
-          <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        <Card key={stat.label} variant="stat" className="flex flex-col gap-2 p-4">
+          <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-ink-muted">
             {stat.label}
           </dt>
-          <dd className="font-display text-2xl font-bold tabular-nums text-ink">{stat.value}</dd>
+          <dd className={cn("font-display text-3xl font-bold leading-none tabular-nums", stat.tone ?? "text-ink")}>
+            {stat.value}
+          </dd>
         </Card>
       ))}
     </dl>
@@ -177,12 +186,20 @@ export default function TeamPage() {
     <div className="space-y-8">
       <BackLink />
 
-      <header className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+      {/* Hero em degradê azul, como a tela de time do protótipo. */}
+      <header className="on-dark flex flex-col gap-4 rounded-card bg-gradient-hero p-5 shadow-hero sm:flex-row sm:flex-wrap sm:items-center sm:p-6">
         <TeamCrest team={team} size="lg" />
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-ink">{team.fullName}</h1>
+          <h1 className="text-3xl font-bold text-white">{team.fullName}</h1>
+          {team.standing && (
+            <p>
+              <span className="inline-block rounded-md bg-white/15 px-2 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-white">
+                {team.standing.position}º · {team.standing.points} pts
+              </span>
+            </p>
+          )}
           {facts.length > 0 && (
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/80">
               {facts.map((fact) => (
                 <li key={fact.text} className="flex items-center gap-1">
                   {fact.icon}
@@ -198,7 +215,7 @@ export default function TeamPage() {
       {team.standing && (
         <section aria-labelledby="desempenho" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 id="desempenho" className="text-xl font-bold text-ink">
+            <h2 id="desempenho" className="eyebrow">
               Desempenho na temporada
             </h2>
             <div className="flex items-center gap-2 text-sm text-ink-muted">
@@ -214,10 +231,10 @@ export default function TeamPage() {
 
       <section aria-labelledby="elenco" className="space-y-4">
         <div>
-          <h2 id="elenco" className="text-xl font-bold text-ink">
+          <h2 id="elenco" className="eyebrow">
             Elenco
           </h2>
-          <p className="text-sm text-ink-muted">
+          <p className="mt-1 text-sm text-ink-muted">
             {team.squad.length} jogadores
             {injured > 0 && ` · ${injured} ${injured === 1 ? "lesionado" : "lesionados"}`}
           </p>

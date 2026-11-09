@@ -4,7 +4,7 @@ import DemoPanel from "./DemoPanel";
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-line bg-white">
+    <footer className="mt-auto border-t border-line bg-surface-deep">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">
         <DemoPanel />
         <DataSourceNote />

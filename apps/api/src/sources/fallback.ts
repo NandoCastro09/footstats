@@ -60,6 +60,7 @@ export function withFallback(
     listCompetitions: () => primary.listCompetitions(),
     listMatches: (code) => attempt("listMatches", (s) => s.listMatches(code), code),
     findMatch: (id) => attempt("findMatch", (s) => s.findMatch(id)),
+    getMatchDetails: (id) => attempt("getMatchDetails", (s) => s.getMatchDetails(id)),
     listStandings: (code) => attempt("listStandings", (s) => s.listStandings(code), code),
     listTeams: (code) => attempt("listTeams", (s) => s.listTeams(code), code),
     getTeam: (id) => attempt("getTeam", (s) => s.getTeam(id)),

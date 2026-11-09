@@ -30,7 +30,7 @@ export default function TeamCrest({ team, size = "md", className }: TeamCrestPro
         loading="lazy"
         decoding="async"
         onError={() => setFailed(true)} // imagem fora do ar → cai na sigla
-        className={cn("shrink-0 object-contain", box, className)}
+        className={cn("logo-outline shrink-0 object-contain", box, className)}
       />
     );
   }
@@ -40,7 +40,7 @@ export default function TeamCrest({ team, size = "md", className }: TeamCrestPro
       role="img"
       aria-label={alt}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary-light font-display font-bold text-primary",
+        "inline-flex shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface-raised font-display font-bold text-ink-soft",
         box,
         className
       )}

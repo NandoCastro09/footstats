@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CalendarX2, CheckCircle2, Clock, Loader2, Radio } from "lucide-react";
+import { CalendarX2, CheckCircle2, Clock, Loader2 } from "lucide-react";
 import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
@@ -20,15 +20,16 @@ type StatusFilter = MatchStatus | "all";
 const icon = "h-4 w-4";
 const statusOptions: Array<{ value: StatusFilter; label: string; icon?: ReactNode }> = [
   { value: "all", label: "Todas" },
-  { value: "live", label: "Ao vivo", icon: <Radio className={icon} aria-hidden="true" /> },
+  // Ponto coral pulsando, como a pílula "Ao vivo" do protótipo.
+  { value: "live", label: "Ao vivo", icon: <span className="h-1.5 w-1.5 animate-live-pulse rounded-full bg-live" aria-hidden="true" /> },
   { value: "scheduled", label: "Agendadas", icon: <Clock className={icon} aria-hidden="true" /> },
   { value: "finished", label: "Encerradas", icon: <CheckCircle2 className={icon} aria-hidden="true" /> },
 ];
 
 const groups: Array<{ status: MatchStatus; title: string; icon: ReactNode }> = [
-  { status: "live", title: "Ao vivo", icon: <Radio className="h-5 w-5 text-live" aria-hidden="true" /> },
-  { status: "scheduled", title: "Próximas partidas", icon: <Clock className="h-5 w-5 text-primary" aria-hidden="true" /> },
-  { status: "finished", title: "Resultados", icon: <CheckCircle2 className="h-5 w-5 text-success" aria-hidden="true" /> },
+  { status: "live", title: "Ao vivo", icon: <span className="h-2 w-2 animate-live-pulse rounded-full bg-live" aria-hidden="true" /> },
+  { status: "scheduled", title: "Próximas partidas", icon: <Clock className="h-4 w-4 text-primary" aria-hidden="true" /> },
+  { status: "finished", title: "Resultados", icon: <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" /> },
 ];
 
 function parseStatus(value: string | null): StatusFilter {
@@ -81,7 +82,7 @@ export default function MatchesPage() {
         role="search"
         aria-label="Filtrar partidas"
         onSubmit={(event) => event.preventDefault()}
-        className="grid gap-4 rounded-card border border-line bg-white p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+        className="grid gap-4 rounded-card border border-line bg-surface p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
         <Input
           label="Buscar por time"
           type="search"
@@ -143,10 +144,10 @@ export default function MatchesPage() {
             if (items.length === 0) return null;
             return (
               <section key={group.status} aria-labelledby={`grupo-${group.status}`} className="space-y-3">
-                <h2 id={`grupo-${group.status}`} className="flex items-center gap-2 text-xl font-bold text-ink">
+                <h2 id={`grupo-${group.status}`} className="eyebrow flex items-center gap-2">
                   {group.icon}
                   {group.title}
-                  <span className="text-base font-normal text-ink-muted">({items.length})</span>
+                  <span className="font-medium">· {items.length}</span>
                 </h2>
                 <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {items.map((match) => (

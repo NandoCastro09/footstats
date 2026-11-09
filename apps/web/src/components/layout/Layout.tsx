@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { SkeletonGrid } from "../Skeleton";
+import BottomNav from "./BottomNav";
 import DemoBanner from "./DemoBanner";
 import Footer from "./Footer";
 import Header from "./Header";
@@ -21,10 +22,13 @@ export default function Layout() {
   }, [pathname]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div
+      // pb-20: no mobile, o rodapé não fica escondido atrás da barra inferior.
+      className="flex min-h-screen flex-col pb-20 lg:pb-0"
+    >
       <a
         href="#conteudo"
-        className="sr-only z-[70] rounded-control bg-white px-4 py-3 font-semibold text-primary shadow-lg focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        className="sr-only z-[70] rounded-control bg-primary-solid px-4 py-3 font-semibold text-white shadow-lg focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
         Pular para o conteúdo
       </a>
@@ -44,6 +48,7 @@ export default function Layout() {
         </Suspense>
       </main>
       <Footer />
+      <BottomNav />
     </div>
   );
 }

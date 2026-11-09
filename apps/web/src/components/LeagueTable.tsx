@@ -86,11 +86,11 @@ export default function LeagueTable({
   }).`;
 
   return (
-    <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
+    <div className="overflow-hidden rounded-card border border-line bg-surface">
       {/* Cabeçalho visual fora da área com scroll, para não ser cortado no mobile.
           O <caption> (sr-only) é o que os leitores de tela usam. */}
-      <div aria-hidden="true" className="border-b border-line bg-primary-light px-4 py-3">
-        <p className="font-display text-lg font-bold text-primary">{caption}</p>
+      <div aria-hidden="true" className="border-b border-line px-4 py-3">
+        <p className="font-display text-lg font-bold text-ink">{caption}</p>
         <p className="text-sm text-ink-muted">
           {sortDescription}{" "}
           <span className="md:hidden">Deslize a tabela para o lado para ver todas as colunas.</span>
@@ -106,7 +106,7 @@ export default function LeagueTable({
           <caption className="sr-only">
             {caption}. {sortDescription} Use os botões do cabeçalho para mudar a ordenação.
           </caption>
-          <thead className="bg-surface-subtle">
+          <thead className="bg-surface-raised">
             <tr>
               {columns.map((column) => {
                 const active = sort.key === column.key;
@@ -127,9 +127,9 @@ export default function LeagueTable({
                         : undefined
                     }
                     className={cn(
-                      "px-1 py-1 font-semibold text-ink",
+                      "px-1 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-ink-muted",
                       column.key === "team"
-                        ? "sticky left-0 z-10 bg-surface-subtle text-left"
+                        ? "sticky left-0 z-10 bg-surface-raised text-left"
                         : "text-center"
                     )}
                   >
@@ -137,7 +137,7 @@ export default function LeagueTable({
                       type="button"
                       onClick={() => handleSort(column.key)}
                       className={cn(
-                        "inline-flex min-h-touch min-w-touch items-center gap-1 rounded-control px-2 hover:bg-primary-light",
+                        "inline-flex min-h-touch min-w-touch items-center gap-1 rounded-control px-2 hover:bg-primary-light hover:text-ink",
                         column.key === "team" ? "justify-start" : "justify-center",
                         active && "text-primary"
                       )}
@@ -151,7 +151,7 @@ export default function LeagueTable({
                   </th>
                 );
               })}
-              <th scope="col" className="px-3 py-1 text-center font-semibold text-ink">
+              <th scope="col" className="px-3 py-1 text-center text-xs font-semibold uppercase tracking-[0.12em] text-ink-muted">
                 Últimos 5
               </th>
             </tr>
@@ -160,33 +160,44 @@ export default function LeagueTable({
             {rows.map((row) => (
               <tr
                 key={row.team.id}
-                className="border-t border-line hover:bg-primary-light/50"
+                className="group border-t border-line hover:bg-surface-raised"
               >
                 <td className="px-3 py-2 text-center font-display font-bold tabular-nums">
                   {row.position}
                 </td>
                 <th
                   scope="row"
-                  className="sticky left-0 z-10 bg-white px-3 py-2 text-left font-medium"
+                  className="sticky left-0 z-10 bg-surface px-3 py-2 text-left font-medium group-hover:bg-surface-raised"
                 >
                   <Link
                     to={`/times/${row.team.id}`}
-                    className="inline-flex min-h-touch items-center gap-2 rounded-control text-ink hover:text-primary hover:underline"
+                    // min-w-max: sem ele, o Firefox calcula a coluna estreita demais
+                    // e o nome do time invade a coluna de pontos.
+                    className="inline-flex min-h-touch min-w-max items-center gap-2 rounded-control font-display text-ink hover:text-primary hover:underline"
                   >
                     <TeamCrest team={row.team} size="sm" />
                     <span className="whitespace-nowrap">{row.team.name}</span>
                   </Link>
                 </th>
-                <td className="bg-primary-light/60 px-3 py-2 text-center font-display font-bold tabular-nums text-primary">
+                <td className="bg-primary-light/60 px-3 py-2 text-center font-display text-base font-bold tabular-nums text-ink">
                   {row.points}
                 </td>
-                <td className="px-3 py-2 text-center tabular-nums">{row.played}</td>
+                <td className="px-3 py-2 text-center tabular-nums text-ink-muted">{row.played}</td>
                 <td className="px-3 py-2 text-center tabular-nums">{row.wins}</td>
                 <td className="px-3 py-2 text-center tabular-nums">{row.draws}</td>
                 <td className="px-3 py-2 text-center tabular-nums">{row.losses}</td>
                 <td className="px-3 py-2 text-center tabular-nums">{row.goalsFor}</td>
                 <td className="px-3 py-2 text-center tabular-nums">{row.goalsAgainst}</td>
-                <td className="px-3 py-2 text-center tabular-nums">
+                <td
+                  className={cn(
+                    "px-3 py-2 text-center tabular-nums",
+                    row.goalDifference > 0
+                      ? "text-success"
+                      : row.goalDifference < 0
+                        ? "text-danger"
+                        : "text-ink-muted"
+                  )}
+                >
                   {formatGoalDifference(row.goalDifference)}
                 </td>
                 <td className="px-3 py-2">

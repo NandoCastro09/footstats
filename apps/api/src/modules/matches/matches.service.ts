@@ -1,4 +1,4 @@
-import type { Match, MatchStatus } from "../../types.js";
+import type { Match, MatchDetails, MatchStatus } from "../../types.js";
 import type { DataSource } from "../../sources/types.js";
 import { notFound } from "../../lib/errors.js";
 import { normalize } from "../../lib/text.js";
@@ -36,4 +36,10 @@ export async function getMatch(source: DataSource, id: string): Promise<Match> {
   const match = await source.findMatch(id);
   if (!match) throw notFound(`Partida "${id}" não encontrada.`);
   return match;
+}
+
+export async function getMatchDetails(source: DataSource, id: string): Promise<MatchDetails> {
+  const details = await source.getMatchDetails(id);
+  if (!details) throw notFound(`Partida "${id}" não encontrada.`);
+  return details;
 }

@@ -30,7 +30,7 @@ export default function DemoPanel() {
   const active = settings.error !== "off" || settings.delay > 0;
 
   return (
-    <details className="rounded-card border border-line bg-surface-subtle" open={active}>
+    <details className="rounded-card border border-line bg-surface" open={active}>
       <summary className="flex min-h-touch cursor-pointer items-center gap-2 px-4 font-medium text-ink">
         <FlaskConical className="h-4 w-4 text-primary" aria-hidden="true" />
         Modo demonstração

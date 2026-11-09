@@ -15,7 +15,7 @@ export default function LeagueTag() {
             alt=""
             width={24}
             height={24}
-            className="h-6 w-6 object-contain"
+            className="logo-outline h-6 w-6 object-contain"
           />
           {competition.name}
           <span className="text-ink-muted">· {competition.season}</span>

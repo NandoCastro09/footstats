@@ -1,4 +1,5 @@
 import type { FormResult, Match, Scorer, Standing, Team } from "../types.js";
+import { buildMockDetails } from "../data/match-details.js";
 import { squadsByTeam } from "../data/players.js";
 import { season, seasonById, VISIBLE_ROUNDS, type MatchRecord } from "../data/season.js";
 import { teams, teamsById, toSummary } from "../data/teams.js";
@@ -122,6 +123,11 @@ export function createMockSource(): DataSource {
     findMatch: async (id) => {
       const record = seasonById.get(id);
       return record ? toMatch(record) : null;
+    },
+
+    getMatchDetails: async (id) => {
+      const record = seasonById.get(id);
+      return record ? buildMockDetails(record, toMatch(record)) : null;
     },
 
     listStandings: async () => standings,

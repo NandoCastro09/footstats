@@ -2,6 +2,7 @@ import type {
   Competition,
   DataSourceInfo,
   Match,
+  MatchDetails,
   Scorer,
   Standing,
   Team,
@@ -21,6 +22,11 @@ export interface DataSource {
   listMatches(competition: string): Promise<Match[]>;
   /** Qualquer partida, de qualquer liga (usada para validar palpites). */
   findMatch(id: string): Promise<Match | null>;
+  /**
+   * Partida com estatísticas, escalações e eventos. null = partida não existe.
+   * Sem dados detalhados da fonte, devolve `detailed: false` (nunca falha por isso).
+   */
+  getMatchDetails(id: string): Promise<MatchDetails | null>;
   listStandings(competition: string): Promise<Standing[]>;
   listTeams(competition: string): Promise<TeamSummary[]>;
   /** Qualquer time, de qualquer liga. */

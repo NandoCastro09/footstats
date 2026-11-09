@@ -32,6 +32,81 @@ export interface Match {
   venue: string;
 }
 
+// ---- Detalhes da partida (GET /api/matches/:id/details) ----
+
+/** G goleiro, D defensor, M meio-campo, F atacante. */
+export type LineupPosition = "G" | "D" | "M" | "F";
+
+export interface LineupPlayer {
+  id: string;
+  name: string;
+  number: number | null;
+  position: LineupPosition | null;
+  /** Posição no campo "linha:coluna" (linha 1 = goleiro). null no banco. */
+  grid: string | null;
+  /** Nota na partida (0–10); null quando a fonte não avalia. */
+  rating: number | null;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  photo: string | null;
+}
+
+export interface TeamLineup {
+  formation: string | null; // "4-3-3"
+  coach: string | null;
+  startXI: LineupPlayer[];
+  substitutes: LineupPlayer[];
+}
+
+export type MatchEventType =
+  | "goal"
+  | "own-goal"
+  | "penalty"
+  | "missed-penalty"
+  | "yellow-card"
+  | "red-card"
+  | "substitution"
+  | "var";
+
+export interface MatchEvent {
+  minute: number;
+  extra: number | null; // acréscimo: 90+3 → minute 90, extra 3
+  side: "home" | "away";
+  type: MatchEventType;
+  player: string | null; // autor; na substituição, quem SAI
+  /** Assistência (gols), quem ENTRA (substituição) ou a decisão do VAR. */
+  related: string | null;
+}
+
+export interface MatchStat {
+  key: string;
+  label: string;
+  home: number | null;
+  away: number | null;
+  format: "number" | "percent" | "decimal";
+}
+
+export interface MatchDetails {
+  /** Partida com placar e minuto já atualizados pela fonte dos detalhes. */
+  match: Match;
+  /** Momento do jogo ao vivo: "1º tempo", "Intervalo", "2º tempo"... */
+  phase: string | null;
+  /** Acréscimos do minuto atual (ao vivo): 45+2 → 2. */
+  extraMinute: number | null;
+  halfTime: { home: number; away: number } | null;
+  referee: string | null;
+  statistics: MatchStat[];
+  lineups: { home: TeamLineup; away: TeamLineup } | null;
+  events: MatchEvent[];
+  /**
+   * false quando a fonte não tem dados detalhados desta partida (liga sem
+   * cobertura, limite diário da API atingido): a tela mostra só o básico.
+   */
+  detailed: boolean;
+}
+
 export type FormResult = "W" | "D" | "L";
 
 export interface Standing {

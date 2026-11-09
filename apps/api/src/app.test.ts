@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createApp, createOriginMatcher } from "./app.js";
-import type { Match, Prediction, Standing, Team } from "./types.js";
+import type { Match, MatchDetails, Prediction, Standing, Team } from "./types.js";
 
 let app: FastifyInstance;
 
@@ -77,6 +77,63 @@ describe("matches", () => {
     const res = await app.inject({ url: "/api/matches/nao-existe" });
     expect(res.statusCode).toBe(404);
     expect(res.json()).toMatchObject({ error: "NOT_FOUND", message: expect.any(String) });
+  });});
+
+describe("detalhes da partida", () => {
+  async function details(status: Match["status"]) {
+    const matches: Match[] = (await app.inject({ url: `/api/matches?status=${status}` })).json().data;
+    const res = await app.inject({ url: `/api/matches/${matches[0].id}/details` });
+    expect(res.statusCode).toBe(200);
+    return res.json().data as MatchDetails;
+  }
+
+  const goalTypes = new Set(["goal", "penalty", "own-goal"]);
+
+  it("encerrada: gols da lista somam o placar, com escalações e estatísticas", async () => {
+    const data = await details("finished");
+    const { match, events, lineups, statistics } = data;
+    const count = (side: string) => events.filter((e) => e.side === side && goalTypes.has(e.type)).length;
+    expect(count("home")).toBe(match.homeScore);
+    expect(count("away")).toBe(match.awayScore);
+    expect(lineups?.home.startXI).toHaveLength(11);
+    expect(lineups?.away.startXI).toHaveLength(11);
+    expect(lineups?.home.startXI.every((p) => p.grid)).toBe(true);
+    const possession = statistics.find((s) => s.key === "possession")!;
+    expect(possession.home! + possession.away!).toBe(100);
+    expect(data.detailed).toBe(true);
+  });
+
+  it("ao vivo: nenhum evento depois do minuto atual", async () => {
+    const data = await details("live");
+    expect(data.events.every((e) => e.minute <= (data.match.minute ?? 0))).toBe(true);
+    expect(data.phase).toMatch(/tempo/);
+  });
+
+  it("mock coerente em todas as partidas: sem 2 amarelos sem vermelho, expulso não volta a aparecer", async () => {
+    const matches: Match[] = (await app.inject({ url: "/api/matches" })).json().data;
+    for (const m of matches.filter((x) => x.status !== "scheduled")) {
+      const { events }: MatchDetails = (await app.inject({ url: `/api/matches/${m.id}/details` })).json().data;
+      const yellows = events.filter((e) => e.type === "yellow-card").map((e) => `${e.side}:${e.player}`);
+      expect(new Set(yellows).size).toBe(yellows.length);
+      for (const red of events.filter((e) => e.type === "red-card")) {
+        const later = events.filter(
+          (e) => e.minute > red.minute && e.side === red.side && (e.player === red.player || e.related === red.player)
+        );
+        expect(later).toEqual([]);
+      }
+    }
+  });
+
+  it("agendada: sem escalação, eventos nem estatísticas", async () => {
+    const data = await details("scheduled");
+    expect(data.lineups).toBeNull();
+    expect(data.events).toEqual([]);
+    expect(data.statistics).toEqual([]);
+  });
+
+  it("404 para partida inexistente", async () => {
+    const res = await app.inject({ url: "/api/matches/nao-existe/details" });
+    expect(res.statusCode).toBe(404);
   });
 });
 
