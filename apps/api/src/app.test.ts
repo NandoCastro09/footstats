@@ -257,6 +257,21 @@ describe("predictions CRUD", () => {
     expect(body.details.name).toBe("Informe seu nome.");
   });
 
+  it.each(["teste@gmail.comsadsadsad", "teste@gmail.co", "teste@.com", "a..b@example.com"])(
+    "400 para e-mail inválido (%s)",
+    async (email) => {
+      const res = await app.inject({ url: "/api/matches?status=scheduled" });
+      const [match] = res.json().data;
+      const created = await app.inject({
+        method: "POST",
+        url: "/api/predictions",
+        payload: { ...validBody(match?.id ?? "x"), email },
+      });
+      expect(created.statusCode).toBe(400);
+      expect(created.json().details.email).toBe("Informe um e-mail válido.");
+    }
+  );
+
   it("400 ao palpitar em partida encerrada", async () => {
     const res = await app.inject({ url: "/api/matches?status=finished" });
     const finishedId = res.json().data[0].id;

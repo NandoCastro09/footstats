@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidEmail } from "../../lib/email.js";
 
 const goals = (side: string) =>
   z
@@ -23,7 +24,8 @@ export const predictionBodySchema = z.object(
       .trim()
       .toLowerCase()
       .min(1, "Informe seu e-mail.")
-      .email("Informe um e-mail válido."),
+      .email("Informe um e-mail válido.")
+      .refine(isValidEmail, "Informe um e-mail válido."),
     matchId: z
       .string({ required_error: "Selecione uma partida." })
       .min(1, "Selecione uma partida."),
