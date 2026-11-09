@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { cn } from "../../lib/cn";
 import { formatRating } from "../../lib/format";
@@ -67,11 +68,14 @@ function Pitch({
     })),
   ];
   const line = "border-[rgba(155,208,92,0.2)]";
+  // Jogador tocado (celular não tem hover): mostra o nome completo dele.
+  const [active, setActive] = useState<string | null>(null);
 
   return (
     // Só visual: as listas abaixo trazem as mesmas informações em texto.
     <div
       aria-hidden="true"
+      onClick={() => setActive(null)}
       className="relative h-[300px] overflow-hidden rounded-card border border-line bg-[linear-gradient(90deg,#12241A_0%,#0F1F16_50%,#12241A_100%)] sm:h-[400px]"
     >
       <div className={cn("absolute inset-2.5 rounded border", line)} />
@@ -97,15 +101,34 @@ function Pitch({
 
       {players.map(({ player, side, left, top }) => {
         const scored = player.goals > 0;
+        const key = `${side}-${player.id}`;
+        const isActive = active === key;
+        const y = Math.min(92, Math.max(8, top));
         return (
           <div
-            key={`${side}-${player.id}`}
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5"
-            style={{
-              left: `${left}%`,
-              top: `${Math.min(92, Math.max(8, top))}%`,
+            key={key}
+            onClick={(event) => {
+              event.stopPropagation();
+              setActive(isActive ? null : key);
             }}
+            className={cn(
+              "group absolute flex -translate-x-1/2 -translate-y-1/2 cursor-default flex-col items-center gap-0.5",
+              isActive ? "z-30" : "z-10 hover:z-30"
+            )}
+            style={{ left: `${left}%`, top: `${y}%` }}
           >
+            {/* Balão com o nome completo ("Jorge" → "Kaio Jorge"). Perto das
+                bordas ele se alinha para dentro, para não ser cortado. */}
+            <span
+              className={cn(
+                "pointer-events-none absolute whitespace-nowrap rounded-md bg-surface-deep/95 px-2 py-1 text-xs font-semibold text-ink shadow-lg ring-1 ring-line transition-opacity",
+                isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+                left < 15 ? "left-0" : left > 85 ? "right-0" : "left-1/2 -translate-x-1/2",
+                y < 25 ? "top-full mt-1" : "bottom-full mb-1"
+              )}
+            >
+              {player.name}
+            </span>
             <span
               className={cn(
                 "flex h-7 w-7 items-center justify-center rounded-full font-display text-xs font-bold text-ink-inverse sm:h-8 sm:w-8",
@@ -226,11 +249,16 @@ function TeamList({
   lineup,
   side,
   events,
+  benchOpen,
+  onBenchToggle,
 }: {
   name: string;
   lineup: TeamLineup;
   side: Side;
   events: MatchEvent[];
+  /** Reservas abertas/fechadas juntas nos dois times. */
+  benchOpen: boolean;
+  onBenchToggle: (open: boolean) => void;
 }) {
   const subs = events.filter(
     (e) => e.type === "substitution" && e.side === side
@@ -274,7 +302,11 @@ function TeamList({
         ))}
       </ul>
       {bench.length > 0 && (
-        <details className="group mt-2 border-t border-line">
+        <details
+          className="group mt-2 border-t border-line"
+          open={benchOpen}
+          onToggle={(event) => onBenchToggle(event.currentTarget.open)}
+        >
           <summary className="flex min-h-touch cursor-pointer items-center text-sm font-semibold text-primary">
             Reservas ({bench.length})
           </summary>
@@ -304,6 +336,9 @@ export default function MatchLineups({
   match: Match;
   events: MatchEvent[];
 }) {
+  // Clicar em "Reservas" de um time abre (ou fecha) as dos dois.
+  const [benchOpen, setBenchOpen] = useState(false);
+
   return (
     <div className="flex flex-col gap-5">
       <Pitch lineups={lineups} />
@@ -336,12 +371,16 @@ export default function MatchLineups({
           lineup={lineups.home}
           side="home"
           events={events}
+          benchOpen={benchOpen}
+          onBenchToggle={setBenchOpen}
         />
         <TeamList
           name={match.awayTeam.name}
           lineup={lineups.away}
           side="away"
           events={events}
+          benchOpen={benchOpen}
+          onBenchToggle={setBenchOpen}
         />
       </div>
     </div>

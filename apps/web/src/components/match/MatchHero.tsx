@@ -18,7 +18,8 @@ function Side({ team }: { team: TeamSummary }) {
       <TeamCrest team={team} size="lg" className="h-14 w-14 sm:h-20 sm:w-20" />
       <Link
         to={`/times/${team.id}`}
-        className="max-w-full truncate rounded-control font-display text-sm font-medium text-white hover:underline sm:text-base"
+        // Nome inteiro em até 2 linhas, sem cortar com "…".
+        className="line-clamp-2 max-w-full text-balance break-words rounded-control font-display text-sm font-medium text-white hover:underline sm:text-base"
       >
         {team.name}
       </Link>

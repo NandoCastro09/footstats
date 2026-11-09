@@ -14,6 +14,7 @@ import type {
 import { coachOverrides } from "../data/coach-overrides.js";
 import { competitionCodes, listCompetitionInfo } from "../data/competitions.js";
 import { crestFor, teamLinks } from "../data/team-links.js";
+import { teamDisplayNames } from "../data/team-names.js";
 import { createCache } from "../lib/cache.js";
 import { samePerson } from "../lib/names.js";
 import type { TeamEnrichment } from "./api-football.js";
@@ -160,7 +161,7 @@ export function toSummary(team: FdTeamRef): TeamSummary {
   const override = teamOverrides[team.id] ?? {};
   return {
     id: String(team.id),
-    name: override.name ?? team.shortName ?? team.name,
+    name: override.name ?? teamDisplayNames[team.id] ?? team.shortName ?? team.name,
     shortName: override.tla ?? team.tla ?? team.name.slice(0, 3).toUpperCase(),
     crest: crestFor(String(team.id), team.crest ?? null),
   };

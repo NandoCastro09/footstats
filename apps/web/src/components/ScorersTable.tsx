@@ -15,7 +15,8 @@ const dash = (value: number | null) => (value === null ? "—" : value);
 export default function ScorersTable({ scorers, caption, showTeam = true }: ScorersTableProps) {
   return (
     <div className="overflow-hidden rounded-card border border-line bg-surface">
-      <div className="overflow-x-auto" role="region" aria-label={caption} tabIndex={0}>
+      {/* relative: prende os textos sr-only na área de rolagem (ver LeagueTable). */}
+      <div className="relative overflow-x-auto" role="region" aria-label={caption} tabIndex={0}>
         <table className="w-full min-w-[480px] border-collapse text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead className="bg-surface-raised">

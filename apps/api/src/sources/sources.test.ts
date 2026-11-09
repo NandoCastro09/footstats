@@ -116,6 +116,11 @@ describe("football-data.org: conversão", () => {
       .toMatchObject({ name: "Atlético-MG", shortName: "CAM" });
     expect(toSummary({ id: 4241, name: "Coritiba FBC", shortName: "Coritiba", tla: "COR", crest: null }))
       .toMatchObject({ name: "Coritiba", shortName: "CFC" });
+    // Apelidos e abreviações viram o nome completo (data/team-names.ts).
+    expect(toSummary({ id: 78, name: "Club Atlético de Madrid", shortName: "Atleti", tla: "ATL", crest: null }).name)
+      .toBe("Atlético de Madrid");
+    expect(toSummary({ id: 81, name: "FC Barcelona", shortName: "Barça", tla: "FCB", crest: null }).name)
+      .toBe("Barcelona");
   });
 
   it("usa o escudo atual da API-Football, salvo as exceções", () => {

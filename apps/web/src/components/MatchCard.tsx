@@ -80,7 +80,8 @@ function TeamSide({ team, isWinner, isLoser, onHero }: TeamSideProps) {
             aria-hidden="true"
           />
         )}
-        <span className="truncate">{team.name}</span>
+        {/* Nome inteiro em até 2 linhas ("Brighton & Hove Albion"), sem "…". */}
+        <span className="line-clamp-2 text-balance break-words">{team.name}</span>
         {isWinner && <span className="sr-only">(vencedor)</span>}
       </Link>
     </div>

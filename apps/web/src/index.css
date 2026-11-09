@@ -10,6 +10,10 @@
 
   body {
     @apply bg-surface-subtle font-sans text-ink antialiased;
+    /* Proteção: nada pode deixar a página mais larga que a tela. No iPhone isso
+       faz o navegador reduzir o zoom e o layout ocupa só metade da tela.
+       (clip, e não hidden, para não quebrar o cabeçalho sticky.) */
+    overflow-x: clip;
     /* Raleway usa algarismos "antigos" por padrão; números alinhados leem melhor. */
     font-feature-settings: "lnum";
   }

@@ -96,8 +96,11 @@ export default function LeagueTable({
           <span className="md:hidden">Deslize a tabela para o lado para ver todas as colunas.</span>
         </p>
       </div>
+      {/* relative: os textos sr-only (position: absolute) das células precisam ficar
+          presos aqui. Sem isso eles "escapam" da rolagem, a página passa a ter ~800px
+          e o iPhone reduz o zoom da tela inteira. */}
       <div
-        className="overflow-x-auto"
+        className="relative overflow-x-auto"
         role="region"
         aria-label={`${caption} (role para os lados para ver todas as colunas)`}
         tabIndex={0}
