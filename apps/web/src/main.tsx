@@ -1,20 +1,20 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import "./index.css";
 import App from "./App.tsx";
 import ToastProvider from "./components/toast/ToastProvider";
-import { queryClient } from "./lib/queryClient";
+import { persistOptions, queryClient } from "./lib/queryClient";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <ToastProvider>
         <BrowserRouter>
           <App />
         </BrowserRouter>
       </ToastProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   </StrictMode>
 );

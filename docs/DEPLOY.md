@@ -147,9 +147,12 @@ Variáveis de ambiente: `NODE_VERSION` = `22`, `CORS_ORIGIN` = `http://localhost
   No plano gratuito, os placares chegam com alguns minutos de atraso. Se a football-data.org
   cair ou o limite estourar, a API passa a servir os dados mock sozinha, e o rodapé do site
   avisa.
-- **Opcional:** para a API não dormir, cadastre um monitor gratuito (por exemplo, o
-  [UptimeRobot](https://uptimerobot.com)) que acesse `/health` a cada 10 minutos. Um
-  serviço ligado o mês todo cabe nas 750 horas gratuitas do Render.
+- **A API não deveria estar dormindo:** o workflow
+  [`keep-api-awake.yml`](../.github/workflows/keep-api-awake.yml) acessa `/health` a cada
+  10 minutos. Um serviço ligado o mês todo cabe nas 750 horas gratuitas do Render. Se a URL
+  da API mudar, crie a variável `API_URL` em GitHub → *Settings* → *Secrets and variables* →
+  *Actions* → *Variables*. O GitHub às vezes atrasa execuções agendadas; se quiser uma
+  garantia extra, cadastre também um monitor gratuito como o [UptimeRobot](https://uptimerobot.com).
 
 ---
 
