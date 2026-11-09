@@ -2,7 +2,6 @@ import { cn } from "../../lib/cn";
 import { formatStat } from "../../lib/format";
 import type { Match, MatchStat } from "../../types";
 
-// Cores dos times em toda a tela da partida: mandante lime, visitante laranja.
 const HOME = "#C8F135";
 const AWAY = "#FF7A45";
 
@@ -12,7 +11,6 @@ function Possession({ stat, match }: { stat: MatchStat; match: Match }) {
   const leader = home >= away ? match.homeTeam.name : match.awayTeam.name;
   return (
     <div className="flex items-center gap-5 rounded-card border border-line bg-surface p-4">
-      {/* Rosca de posse (conic-gradient); os números estão na legenda ao lado. */}
       <div
         aria-hidden="true"
         className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full"
@@ -74,7 +72,6 @@ function StatRow({ stat, match }: { stat: MatchStat; match: Match }) {
   const total = home + away;
   const cards = stat.key === "yellowCards";
   const red = stat.key === "redCards";
-  // Quem lidera a estatística fica colorido; o outro, apagado.
   const homeColor = cards
     ? "#D99A2B"
     : red
@@ -140,7 +137,6 @@ function StatRow({ stat, match }: { stat: MatchStat; match: Match }) {
   );
 }
 
-/** Aba "Estatísticas": rosca de posse + barras comparativas, como no protótipo. */
 export default function MatchStats({
   statistics,
   match,

@@ -13,12 +13,9 @@ import type {
 } from "../types";
 import { demoHeaders } from "./demoSettings";
 
-// Todas as chamadas HTTP do app passam por aqui.
-
 const BASE_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const TIMEOUT_MS = 15_000;
 
-/** Erro de API já com mensagem amigável. `status` 0 = sem conexão/timeout. */
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
@@ -50,7 +47,8 @@ function isApiErrorBody(value: unknown): value is ApiErrorBody {
   );
 }
 
-/** `unwrap`: as rotas /api devolvem { data }; o /health devolve o objeto direto. */
+// Função única usada por todas as chamadas: monta a URL, coloca timeout de 15 s
+// e transforma qualquer falha (rede, timeout, 4xx, 5xx) em ApiError com mensagem em português.
 async function request<T>(path: string, init: RequestInit = {}, unwrap = true): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -58,7 +56,6 @@ async function request<T>(path: string, init: RequestInit = {}, unwrap = true): 
     Accept: "application/json",
     ...demoHeaders(),
   };
-  // Só manda Content-Type quando há corpo (o Fastify recusa DELETE com JSON vazio).
   if (init.body) headers["Content-Type"] = "application/json";
 
   let response: Response;
@@ -74,8 +71,7 @@ async function request<T>(path: string, init: RequestInit = {}, unwrap = true): 
       0,
       timedOut ? "TIMEOUT" : "NETWORK_ERROR",
       timedOut
-        ? // No plano gratuito do Render a API "dorme" e leva até ~1 min para acordar.
-          "O servidor demorou para responder. Se ele estava em repouso, pode levar até 1 minuto para iniciar. Tente novamente."
+        ? "O servidor demorou para responder. Se ele estava em repouso, pode levar até 1 minuto para iniciar. Tente novamente."
         : "Não foi possível conectar ao servidor. Verifique sua conexão."
     );
   } finally {
@@ -87,6 +83,7 @@ async function request<T>(path: string, init: RequestInit = {}, unwrap = true): 
   const body: unknown = await response.json().catch(() => null);
 
   if (!response.ok) {
+    // A nossa API sempre responde erro como { error, message, details }.
     if (isApiErrorBody(body)) {
       throw new ApiError(response.status, body.error, body.message, body.details);
     }

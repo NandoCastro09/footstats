@@ -6,13 +6,11 @@ interface PlayerCardProps {
   player: Player;
 }
 
-/** Card do jogador: foto, nome, "Nº 15 · 29 anos" e o número da camisa como marca d'água. */
 export default function PlayerCard({ player }: PlayerCardProps) {
   const details = [
     player.number !== null && `Nº ${player.number}`,
     player.age !== null && `${player.age} anos`,
   ].filter(Boolean);
-  // Estatísticas por jogador só existem nos dados mock (as APIs gratuitas não trazem).
   const stats =
     player.goals !== null && player.assists !== null && player.yellowCards !== null
       ? `${player.goals} gols · ${player.assists} assist. · ${player.yellowCards} amarelos`

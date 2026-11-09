@@ -9,7 +9,6 @@ interface SegmentOption<T extends string> {
 }
 
 interface SegmentedControlProps<T extends string> {
-  /** Nome do grupo para leitores de tela ("Status da partida"). */
   label: string;
   options: SegmentOption<T>[];
   value: T;
@@ -17,10 +16,6 @@ interface SegmentedControlProps<T extends string> {
   className?: string;
 }
 
-/**
- * Grupo segmentado num trilho escuro. Cada opção é um <button aria-pressed>,
- * então Tab, Enter/Espaço e leitores de tela funcionam sem código extra.
- */
 export default function SegmentedControl<T extends string>({
   label,
   options,

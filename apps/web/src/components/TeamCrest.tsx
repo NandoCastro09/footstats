@@ -14,7 +14,6 @@ const sizes = {
   lg: { box: "h-20 w-20 text-lg", px: 80 },
 };
 
-/** Escudo do time (imagem da API) ou, sem imagem, a sigla num círculo. */
 export default function TeamCrest({ team, size = "md", className }: TeamCrestProps) {
   const [failed, setFailed] = useState(false);
   const { box, px } = sizes[size];
@@ -29,7 +28,7 @@ export default function TeamCrest({ team, size = "md", className }: TeamCrestPro
         height={px}
         loading="lazy"
         decoding="async"
-        onError={() => setFailed(true)} // imagem fora do ar → cai na sigla
+        onError={() => setFailed(true)}
         className={cn("logo-outline shrink-0 object-contain", box, className)}
       />
     );
@@ -40,8 +39,6 @@ export default function TeamCrest({ team, size = "md", className }: TeamCrestPro
       role="img"
       aria-label={alt}
       className={cn(
-        // Sem imagem: sigla em fonte condensada num círculo (a fonte de dados não
-        // informa as cores dos clubes, então o círculo usa o tom de superfície).
         "inline-flex shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface-2 font-display font-extrabold uppercase tracking-wide text-ink",
         box,
         className

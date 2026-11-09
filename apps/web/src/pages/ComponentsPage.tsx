@@ -1,4 +1,3 @@
-// Galeria dos componentes reutilizáveis, com dados fixos (rota /componentes).
 import { useState } from "react";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { AlertTriangle, CheckCircle2, Trash2, XCircle } from "lucide-react";

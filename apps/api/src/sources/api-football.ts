@@ -10,25 +10,13 @@ import {
   type AfMatchDetails,
 } from "./api-football-match.js";
 
-// API-Football (plano gratuito): só os endpoints SEM temporada funcionam —
-// elenco atual (/players/squads: foto, número, idade, posição), técnicos
-// (/coachs: foto, nacionalidade), partidas de uma data (/fixtures?date=) e uma
-// partida completa (/fixtures?id=: eventos, escalações, estatísticas, notas).
-// Limite: 100 req/dia e ~10 req/minuto, então tudo fica em cache e, após um
-// erro, a API faz uma pausa de 1 min.
-
 const BASE_URL = "https://v3.football.api-sports.io";
+// Quanto tempo cada resposta fica em cache (a cota da API-Football é por dia).
 const TTL = 24 * 60 * 60_000;
 const MINUTE = 60_000;
-/** Partida avulsa: ao vivo muda; encerrada não muda mais. */
 const FIXTURE_TTL = { live: 3 * MINUTE, scheduled: 20 * MINUTE, finished: 7 * 24 * 60 * MINUTE };
-/** Lista de partidas de uma data: só serve para achar o id, que não muda. */
 const DATE_TTL = 6 * 60 * MINUTE;
 
-/**
- * O plano gratuito só aceita /fixtures?date= de ontem a amanhã (UTC); fora
- * disso a partida é achada pelo confronto direto (/fixtures/headtohead).
- */
 export function inFreeDateWindow(date: string, now: number) {
   const day = Date.parse(`${date}T00:00:00Z`);
   const today = Date.parse(new Date(now).toISOString().slice(0, 10) + "T00:00:00Z");
@@ -59,7 +47,6 @@ interface AfCoachesResponse {
   }>;
 }
 
-/** fetch autenticado. A API-Football responde 200 com `errors` preenchido em falhas (ex.: limite). */
 export function createApiFootballFetch(key: string): FetchJson {
   return async <T>(path: string) => {
     const response = await fetch(`${BASE_URL}${path}`, {
@@ -83,13 +70,9 @@ export interface CoachCandidate {
   since: string | null;
 }
 
-/** Dados complementares por time (chave: id da football-data.org). */
 export interface TeamEnrichment {
-  /** Elenco atual com fotos; null se o time não tem ligação com a API-Football. */
   squad(teamId: string): Promise<Player[] | null>;
-  /** Técnicos com vínculo em aberto no time, do mais recente ao mais antigo. */
   coaches(teamId: string): Promise<CoachCandidate[]>;
-  /** Eventos, escalações e estatísticas da partida; null se ela não for encontrada. */
   matchDetails(match: Match): Promise<AfMatchDetails | null>;
 }
 
@@ -103,6 +86,7 @@ export function createApiFootballEnrichment({
   const cache = createCache(now);
   let pausedUntil = 0;
 
+  // Toda chamada passa pelo cache. Se der erro, pausa 1 minuto para não gastar a cota insistindo.
   function call<T>(key: string, path: string, ttl = TTL, transform?: (body: unknown) => T) {
     return cache.get(key, ttl, async () => {
       if (now() < pausedUntil) throw new Error("API-Football em pausa após um erro recente.");
@@ -110,13 +94,12 @@ export function createApiFootballEnrichment({
         const body = await fetchJson<T>(path);
         return transform ? transform(body) : body;
       } catch (error) {
-        pausedUntil = now() + COOLDOWN; // não insiste: protege o limite por minuto
+        pausedUntil = now() + COOLDOWN;
         throw error;
       }
     });
   }
 
-  /** Guarda só o necessário: a lista de um dia tem ~1.000 partidas do mundo todo. */
   const summarize = (body: unknown) =>
     (body as { response: AfFixtureSummary[] }).response.map((f) => ({
       fixture: { id: f.fixture.id, date: f.fixture.date, status: { short: f.fixture.status.short } },
@@ -140,7 +123,7 @@ export function createApiFootballEnrichment({
         name: p.name,
         number: p.number ?? null,
         position: mapPosition(p.position),
-        nationality: "", // o endpoint de elenco não informa
+        nationality: "",
         age: p.age ?? null,
         goals: null,
         assists: null,
@@ -175,15 +158,15 @@ export function createApiFootballEnrichment({
     async matchDetails(match) {
       const home = { afId: teamLinks[match.homeTeam.id]?.apiFootballId, name: match.homeTeam.name };
       const away = { afId: teamLinks[match.awayTeam.id]?.apiFootballId, name: match.awayTeam.name };
-      // Datas em UTC, como a API-Football (o padrão dela é UTC).
       const date = match.kickoff.slice(0, 10);
 
+      // A football-data e a API-Football têm ids diferentes para a mesma partida.
+      // Achamos o jogo pela data + times: jogos de ontem/hoje/amanhã vêm numa lista do dia;
+      // os mais antigos, pelo histórico de confrontos (head-to-head) dos dois times.
       let found: AfFixtureSummary | null = null;
       if (inFreeDateWindow(date, now())) {
-        // Ontem/hoje/amanhã: uma requisição traz todos os jogos do dia (serve para todas as partidas).
         found = findFixture(await fixturesOn(date), home, away);
       } else if (home.afId !== undefined && away.afId !== undefined) {
-        // Fora da janela de datas do plano gratuito: confronto direto dos dois times, filtrado pela data.
         const meetings = await call<AfFixtureSummary[]>(
           `h2h:${home.afId}-${away.afId}`,
           `/fixtures/headtohead?h2h=${home.afId}-${away.afId}`,

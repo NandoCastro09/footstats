@@ -1,14 +1,9 @@
 import { z } from "zod";
 
-// Mesmas regras e mensagens de apps/api/src/modules/predictions/predictions.schemas.ts.
-// Regras que dependem do servidor (partida já começou, palpite duplicado)
-// voltam da API como 400/409 e são exibidas no campo correspondente.
-
 const goals = (side: string) =>
   z
     .number({
       required_error: `Informe os gols do ${side}.`,
-      // Campo numérico vazio vira NaN no react-hook-form (valueAsNumber).
       invalid_type_error: `Informe os gols do ${side}.`,
     })
     .int("Use um número inteiro.")

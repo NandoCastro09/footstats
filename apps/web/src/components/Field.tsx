@@ -2,7 +2,6 @@ import { useId, type ReactNode } from "react";
 import { AlertCircle } from "lucide-react";
 import { cn } from "../lib/cn";
 
-/** Props de acessibilidade que o Field entrega para o controle (input/select/textarea). */
 export interface FieldControlProps {
   id: string;
   required?: boolean;
@@ -23,10 +22,6 @@ interface FieldWrapperProps extends FieldProps {
   children: (control: FieldControlProps) => ReactNode;
 }
 
-/**
- * Label + dica + controle + mensagem de erro, já ligados por id:
- * aria-invalid quando há erro e aria-describedby apontando dica e erro.
- */
 export default function Field({
   label,
   error,
@@ -46,7 +41,6 @@ export default function Field({
     <div className={cn("flex flex-col gap-1.5", className)}>
       <label htmlFor={controlId} className="text-sm font-semibold text-ink">
         {label}
-        {/* O atributo required já é anunciado pelo leitor de tela; o * é só visual. */}
         {required && (
           <span className="text-lime" aria-hidden="true">
             {" "}

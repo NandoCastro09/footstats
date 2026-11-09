@@ -1,7 +1,3 @@
-/**
- * Zonas da tabela por liga (cores do quadradinho da posição, divisórias e legenda).
- * Simplificado: vagas e rebaixamento "padrão" de cada campeonato.
- */
 export type ZoneColor = "liberta" | "pre" | "sula" | "z4";
 
 export interface Zone {
@@ -13,13 +9,10 @@ export interface Zone {
 
 export interface LeagueZones {
   zones: Zone[];
-  /** Posições DEPOIS das quais vai uma linha divisória mais forte. */
   dividers: number[];
-  /** Card "Briga contra o Z4": nome e a primeira posição da zona de perigo. */
   danger?: { label: string; from: number };
 }
 
-/** Classes do quadradinho da posição (texto escuro sobre a cor: ≥ 7:1). */
 export const zoneSquare: Record<ZoneColor | "none", string> = {
   liberta: "bg-zone-liberta text-ink-inverse",
   pre: "bg-zone-pre text-ink-inverse",
@@ -29,7 +22,7 @@ export const zoneSquare: Record<ZoneColor | "none", string> = {
 };
 
 function european(teams: number, champions: number): LeagueZones {
-  const relegation = teams - 2; // 3 últimos (rebaixamento direto ou playoff)
+  const relegation = teams - 2;
   return {
     zones: [
       { color: "liberta", label: "Champions League", from: 1, to: champions },
@@ -80,7 +73,7 @@ export function zonesFor(competition: string, teams: number): LeagueZones {
     case "DED":
     case "PPL":
       return european(teams, 2);
-    default: // PL, PD, SA, BL1
+    default:
       return european(teams, 4);
   }
 }

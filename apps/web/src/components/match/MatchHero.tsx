@@ -8,7 +8,6 @@ import type { MatchDetails, TeamSummary } from "../../types";
 interface MatchHeroProps {
   details: MatchDetails;
   leagueName?: string;
-  /** As abas ficam dentro do hero, como no protótipo. */
   children?: ReactNode;
 }
 
@@ -18,7 +17,6 @@ function Side({ team }: { team: TeamSummary }) {
       <TeamCrest team={team} size="lg" className="h-14 w-14 sm:h-20 sm:w-20" />
       <Link
         to={`/times/${team.id}`}
-        // Nome inteiro em até 2 linhas, sem cortar com "…".
         className="line-clamp-2 max-w-full text-balance break-words rounded-control font-display text-lg font-bold uppercase leading-tight text-ink hover:text-lime hover:underline sm:text-2xl"
       >
         {team.name}
@@ -58,7 +56,6 @@ function StatusPill({ details }: { details: MatchDetails }) {
   );
 }
 
-/** Cabeçalho da partida: degradê azul com escudos, placar, status e as abas. */
 export default function MatchHero({
   details,
   leagueName,
@@ -85,7 +82,6 @@ export default function MatchHero({
         </p>
       </div>
 
-      {/* O h1 é o confronto; o placar visual fica escondido do leitor de tela (já está no texto). */}
       <h1 className="sr-only">
         {scoreLabel}
         {match.status === "live"

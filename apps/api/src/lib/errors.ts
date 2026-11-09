@@ -1,8 +1,7 @@
-/** Formato padronizado de erro de todas as respostas da API. */
 export interface ErrorBody {
-  error: string; // código legível por máquina, ex.: "NOT_FOUND"
-  message: string; // mensagem amigável em português
-  details?: Record<string, string>; // erros por campo (validação)
+  error: string;
+  message: string;
+  details?: Record<string, string>;
 }
 
 export class AppError extends Error {

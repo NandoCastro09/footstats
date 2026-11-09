@@ -4,8 +4,6 @@ import Layout from "./components/layout/Layout";
 import LeagueProvider from "./league/LeagueProvider";
 import MatchesPage from "./pages/MatchesPage";
 
-// Páginas carregadas sob demanda: quem abre "Partidas" não baixa o código do
-// formulário (zod + react-hook-form) nem das outras telas.
 const StandingsPage = lazy(() => import("./pages/StandingsPage"));
 const TeamPage = lazy(() => import("./pages/TeamPage"));
 const MatchPage = lazy(() => import("./pages/MatchPage"));

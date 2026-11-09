@@ -6,16 +6,13 @@ const envSchema = z.object({
     .default("development"),
   PORT: z.coerce.number().int().positive().default(3000),
   HOST: z.string().default("0.0.0.0"),
-  // Lista separada por vírgula; aceita curinga (*) para previews da Vercel.
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
-  // auto: usa a football-data.org quando houver token; senão, o mock.
   DATA_SOURCE: z.enum(["auto", "football-data", "mock"]).default("auto"),
   FOOTBALL_DATA_TOKEN: z
     .string()
     .trim()
     .optional()
     .transform((value) => value || undefined),
-  // Opcional: fotos dos jogadores, número da camisa e técnicos (API-Football).
   API_FOOTBALL_KEY: z
     .string()
     .trim()

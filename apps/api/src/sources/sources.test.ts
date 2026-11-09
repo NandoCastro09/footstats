@@ -13,7 +13,6 @@ import {
 import { createMockSource } from "./mock.js";
 import type { DataSource } from "./types.js";
 
-// Respostas falsas no formato da football-data.org v4 (nada vai para a rede).
 const NOW = Date.parse("2026-11-05T12:00:00Z");
 const fla = { id: 1783, name: "CR Flamengo", shortName: "Flamengo", tla: "FLA", crest: "https://crests.football-data.org/1783.png" };
 const pal = { id: 1769, name: "SE Palmeiras", shortName: "Palmeiras", tla: "PAL", crest: "https://crests.football-data.org/1769.png" };
@@ -34,12 +33,12 @@ function match(id: number, status: string, matchday: number, utcDate: string, ho
 const responses: Record<string, unknown> = {
   "/competitions/BSA/matches": {
     matches: [
-      match(1, "FINISHED", 10, "2026-05-01T20:00:00Z", fla, pal, [2, 0]), // rodada antiga: fora da lista
+      match(1, "FINISHED", 10, "2026-05-01T20:00:00Z", fla, pal, [2, 0]),
       match(2, "FINISHED", 33, "2026-10-29T20:00:00Z", pal, fla, [1, 1]),
       match(3, "IN_PLAY", 34, "2026-11-05T11:00:00Z", fla, pal, [1, 0]),
       match(4, "TIMED", 35, "2026-11-08T19:00:00Z"),
-      match(5, "POSTPONED", 34, "2026-11-04T19:00:00Z"), // adiado: ignorado
-      match(6, "TIMED", 21, "2026-11-07T19:00:00Z"), // remarcado para esta semana: aparece
+      match(5, "POSTPONED", 34, "2026-11-04T19:00:00Z"),
+      match(6, "TIMED", 21, "2026-11-07T19:00:00Z"),
     ],
   },
   "/competitions/BSA/standings": {
@@ -80,7 +79,6 @@ const responses: Record<string, unknown> = {
 
 function fakeFetch() {
   return vi.fn(async (path: string) => {
-    // Time avulso: /teams/:id (como a API real; 404 se não existir).
     const teamId = path.match(/^\/teams\/(\d+)$/)?.[1];
     if (teamId) {
       const teams = (responses["/competitions/BSA/teams"] as { teams: Array<{ id: number }> }).teams;
@@ -116,7 +114,6 @@ describe("football-data.org: conversão", () => {
       .toMatchObject({ name: "Atlético-MG", shortName: "CAM" });
     expect(toSummary({ id: 4241, name: "Coritiba FBC", shortName: "Coritiba", tla: "COR", crest: null }))
       .toMatchObject({ name: "Coritiba", shortName: "CFC" });
-    // Apelidos e abreviações viram o nome completo (data/team-names.ts).
     expect(toSummary({ id: 78, name: "Club Atlético de Madrid", shortName: "Atleti", tla: "ATL", crest: null }).name)
       .toBe("Atlético de Madrid");
     expect(toSummary({ id: 81, name: "FC Barcelona", shortName: "Barça", tla: "FCB", crest: null }).name)
@@ -125,13 +122,10 @@ describe("football-data.org: conversão", () => {
 
   it("usa o escudo atual da API-Football, salvo as exceções", () => {
     const fd = (id: number) => `https://crests.football-data.org/${id}.png`;
-    // Athletico-PR: o da football-data.org é o escudo antigo (antes de 2018).
     expect(toSummary({ id: 1768, name: "CA Paranaense", shortName: "Athletico", tla: "CAP", crest: fd(1768) }).crest)
       .toBe("https://media.api-sports.io/football/teams/134.png");
-    // Juventus está na lista de exceções: mantém o da football-data.org.
     expect(toSummary({ id: 109, name: "Juventus FC", shortName: "Juventus", tla: "JUV", crest: fd(109) }).crest)
       .toBe(fd(109));
-    // Time sem ligação com a API-Football: mantém o da football-data.org.
     expect(toSummary({ id: 999999, name: "Time X", shortName: "X", tla: "XXX", crest: fd(999999) }).crest)
       .toBe(fd(999999));
   });
@@ -152,9 +146,8 @@ describe("football-data.org: conversão", () => {
       status: "live",
       homeScore: 1,
       awayScore: 0,
-      // Flamengo está ligado à API-Football (id 127): o escudo vem de lá.
       homeTeam: { id: "1783", name: "Flamengo", shortName: "FLA", crest: "https://media.api-sports.io/football/teams/127.png" },
-      venue: "Estadio Jornalista Mário Filho", // vem do cadastro do time mandante
+      venue: "Estadio Jornalista Mário Filho",
     });
     expect(matches.find((m) => m.id === "4")).toMatchObject({ homeScore: null, awayScore: null });
   });
@@ -164,7 +157,7 @@ describe("football-data.org: conversão", () => {
     const source = createFootballDataSource({ fetchJson, now: () => NOW });
     await source.listMatches("BSA");
     const calls = fetchJson.mock.calls.length;
-    expect((await source.findMatch("1"))?.status).toBe("finished"); // rodada antiga, fora da lista
+    expect((await source.findMatch("1"))?.status).toBe("finished");
     expect(fetchJson.mock.calls.length).toBe(calls);
   });
 
@@ -182,7 +175,7 @@ describe("football-data.org: conversão", () => {
     const source = createFootballDataSource({ fetchJson: fakeFetch(), now: () => NOW });
     const [first] = await source.listStandings("BSA");
     expect(first).toMatchObject({ position: 1, points: 76, team: { id: "1783" } });
-    expect(first.form).toEqual(["W", "D"]); // 2x0 e 1x1 (o jogo ao vivo não conta)
+    expect(first.form).toEqual(["W", "D"]);
   });
 
   it("time com elenco ordenado por posição e campos sem dado como null", async () => {
@@ -192,7 +185,7 @@ describe("football-data.org: conversão", () => {
       fullName: "CR Flamengo",
       stadium: "Estadio Jornalista Mário Filho",
       founded: 1895,
-      city: "Rio de Janeiro (RJ)", // vem de data/team-links.ts
+      city: "Rio de Janeiro (RJ)",
       coach: { name: "Filipe Luís", photo: null },
       standing: { position: 1 },
     });
@@ -217,7 +210,6 @@ describe("football-data.org: conversão", () => {
     const fetchJson = fakeFetch();
     const source = createFootballDataSource({ fetchJson, now: () => NOW });
     await source.listMatches("BSA");
-    // Com a liga já carregada, o time sai do cache (não chama /teams/:id).
     await Promise.all([source.listMatches("BSA"), source.listStandings("BSA"), source.getTeam("1783")]);
     await source.listMatches("BSA");
     const paths = fetchJson.mock.calls.map((call) => call[0]);
@@ -234,7 +226,7 @@ describe("cache", () => {
     let time = 0;
     const cache = createCache(() => time);
     expect(await cache.get("k", 1000, async () => "v1")).toBe("v1");
-    time = 5000; // venceu
+    time = 5000;
     expect(await cache.get("k", 1000, async () => Promise.reject(new Error("fora do ar")))).toBe("v1");
   });
 
@@ -251,7 +243,7 @@ describe("reserva (fallback)", () => {
     const fetchJson = fakeFetch();
     const source = createFootballDataSource({ fetchJson, now: () => NOW });
     const team = (await source.getTeam("1783"))!;
-    expect(team.competition).toBe("BSA"); // a liga, não a copa
+    expect(team.competition).toBe("BSA");
     expect(fetchJson.mock.calls.map((c) => c[0])).toContain("/teams/1783");
   });
 

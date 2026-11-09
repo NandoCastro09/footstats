@@ -1,17 +1,11 @@
 import type { ReactNode } from "react";
 import { cn } from "../lib/cn";
 
-/**
- * Bloco que ocupa o lugar do conteúdo enquanto carrega, com um brilho que
- * atravessa da esquerda para a direita. Decorativo (aria-hidden): quem anuncia
- * o carregamento é o <SkeletonRegion> em volta.
- */
 export default function Skeleton({
   className,
   as: Tag = "div",
 }: {
   className?: string;
-  /** "span" quando estiver dentro de texto (ex.: num <h1>). */
   as?: "div" | "span";
 }) {
   return (
@@ -27,7 +21,6 @@ export default function Skeleton({
   );
 }
 
-/** Área "carregando": anuncia o texto para leitores de tela e esconde os blocos. */
 export function SkeletonRegion({
   label,
   children,
@@ -45,7 +38,6 @@ export function SkeletonRegion({
   );
 }
 
-/** Grade de placeholders iguais (usada em telas simples). */
 export function SkeletonGrid({
   count = 6,
   itemClassName = "h-48",

@@ -5,17 +5,14 @@ import type { Scorer } from "../types";
 interface ScorersTableProps {
   scorers: Scorer[];
   caption: string;
-  /** Na página de um time a coluna "Time" é redundante. */
   showTeam?: boolean;
 }
 
 const dash = (value: number | null) => (value === null ? "—" : value);
 
-/** Tabela de artilharia: posição, jogador, (time), gols, assistências, jogos. */
 export default function ScorersTable({ scorers, caption, showTeam = true }: ScorersTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-      {/* relative: prende os textos sr-only na área de rolagem (ver LeagueTable). */}
       <div className="relative overflow-x-auto" role="region" aria-label={caption} tabIndex={0}>
         <table className="w-full min-w-[480px] border-collapse text-sm">
           <caption className="sr-only">{caption}</caption>
@@ -45,8 +42,6 @@ export default function ScorersTable({ scorers, caption, showTeam = true }: Scor
                   <td className="px-3 py-2">
                     <Link
                       to={`/times/${scorer.team.id}`}
-                      // min-w-max: sem ele, o Firefox calcula a coluna estreita demais
-                      // e o nome do time invade a coluna ao lado.
                       className="inline-flex min-h-touch min-w-max items-center gap-2 rounded-control font-display text-ink hover:text-primary hover:underline"
                     >
                       <TeamCrest team={scorer.team} size="sm" />

@@ -17,27 +17,22 @@ function store(code: string) {
   try {
     localStorage.setItem(STORAGE_KEY, code);
   } catch {
-    // Sem localStorage: a liga fica só na URL.
+    // navegador sem localStorage (aba anônima): a liga fica só na URL
   }
 }
 
-/**
- * Liga selecionada. Ordem de prioridade: ?liga= na URL (link compartilhado)
- * → última liga escolhida neste navegador → Brasileirão.
- */
 export default function LeagueProvider({ children }: { children: ReactNode }) {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { data: competitions = [] } = useCompetitions();
 
+  // Liga escolhida: ?liga= na URL (link compartilhado) > última escolha salva > Brasileirão.
   const fromUrl = params.get("liga")?.toUpperCase() ?? null;
   const requested = fromUrl ?? readStored() ?? DEFAULT_LEAGUE;
-  // Enquanto a lista não chega, confia no pedido; depois, liga desconhecida vira o padrão.
   const valid = competitions.length === 0 || competitions.some((c) => c.code === requested);
   const code = valid ? requested : DEFAULT_LEAGUE;
 
-  // Quem abre um link com ?liga=PL passa a ter a Premier League como liga lembrada.
   useEffect(() => {
     if (fromUrl && valid) store(fromUrl);
   }, [fromUrl, valid]);
@@ -45,7 +40,6 @@ export default function LeagueProvider({ children }: { children: ReactNode }) {
   const setLeague = useCallback(
     (next: string) => {
       store(next);
-      // A página de um time pertence a uma liga: ao trocar, vai para as partidas da nova.
       if (pathname.startsWith("/times/")) {
         navigate(`/?liga=${next}`);
         return;

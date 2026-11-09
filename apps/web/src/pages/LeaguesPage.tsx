@@ -43,7 +43,6 @@ const countryCodes: Record<string, string> = {
 const normalize = (text: string) =>
   text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-/** Logo da liga num quadrado claro: os logos escuros (Premier League, Ligue 1...) não somem no fundo escuro. */
 function LeagueLogo({ competition, size }: { competition: Competition; size: 56 | 72 }) {
   return (
     <span

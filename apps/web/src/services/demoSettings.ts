@@ -1,9 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-// "Modo demonstração": faz a API responder com erro ou atraso de propósito,
-// para mostrar o tratamento de erros na apresentação. Fica salvo no navegador.
-
 export interface DemoSettings {
   error: "off" | "500" | "503" | "404";
   delay: 0 | 1500 | 3000;
@@ -33,7 +30,7 @@ export function setDemoSettings(next: Partial<DemoSettings>) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch {
-    // Sem localStorage (aba anônima bloqueada): vale só para esta sessão.
+    // sem localStorage: a simulação vale só até recarregar a página
   }
   listeners.forEach((listener) => listener());
 }
@@ -47,7 +44,6 @@ export function useDemoSettings() {
   return useSyncExternalStore(subscribe, getDemoSettings);
 }
 
-/** Altera a simulação e já refaz as buscas da tela (sem esperar o cache expirar). */
 export function useUpdateDemoSettings() {
   const queryClient = useQueryClient();
   return (next: Partial<DemoSettings>) => {
@@ -56,7 +52,6 @@ export function useUpdateDemoSettings() {
   };
 }
 
-/** Headers que a API entende (ver apps/api/src/plugins/simulation.ts). */
 export function demoHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
   if (settings.error !== "off") headers["x-simulate-error"] = settings.error;

@@ -8,12 +8,11 @@ import type { PredictionInput } from "./predictions.schemas.js";
 
 export type PredictionsService = ReturnType<typeof createPredictionsService>;
 
-/** "Banco" de palpites em memória: reinicia quando a API reinicia. */
 export function createPredictionsService(source: DataSource) {
+  // Sem banco de dados: os palpites ficam em memória (somem quando a API reinicia).
   const store = new Map<string, PredictionRecord>();
   let seeding: Promise<void> | null = null;
 
-  /** Distribui os palpites iniciais entre os próximos jogos agendados. */
   function ensureSeeded() {
     seeding ??= (async () => {
       const upcoming = (await source.listMatches(DEFAULT_COMPETITION))
@@ -24,19 +23,19 @@ export function createPredictionsService(source: DataSource) {
         if (match) store.set(seed.id, { ...seed, matchId: match.id });
       });
     })().catch((error) => {
-      seeding = null; // tenta de novo na próxima requisição
+      seeding = null;
       throw error;
     });
     return seeding;
   }
 
-  /** Embute a partida; palpites cuja partida sumiu da fonte ficam de fora. */
   async function withMatch(record: PredictionRecord): Promise<Prediction | null> {
     const match = await source.findMatch(record.matchId);
     return match ? { ...record, match } : null;
   }
 
-  /** Regras de negócio que o schema sozinho não cobre. */
+  // Regras de negócio: a partida precisa existir, não pode ter começado
+  // e cada e-mail só pode ter um palpite por partida (409 Conflict).
   async function assertValid(input: PredictionInput, ignoreId?: string) {
     const match = await source.findMatch(input.matchId);
     if (!match) {
@@ -93,7 +92,6 @@ export function createPredictionsService(source: DataSource) {
       if (!store.delete(id)) throw notFound(`Palpite "${id}" não encontrado.`);
     },
 
-    /** Volta ao estado inicial (usado nos testes). */
     reset() {
       store.clear();
       seeding = null;

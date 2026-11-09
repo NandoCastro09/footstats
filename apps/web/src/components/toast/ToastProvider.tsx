@@ -38,10 +38,8 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      {/* Região sempre presente: leitores de tela anunciam o que entra nela. */}
       <div
         aria-live="polite"
-        // pb-24: no mobile, acima da barra de navegação inferior.
         className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2 p-4 pb-24 sm:items-end lg:pb-4"
       >
         {toasts.map((toast) => {

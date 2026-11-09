@@ -16,7 +16,6 @@ const titles: Record<MatchEventType, string> = {
 
 const GOALS = new Set<MatchEventType>(["goal", "penalty", "own-goal"]);
 
-/** Marcador da linha do tempo: forma + cor (gol = bolinha, cartão = retângulo). */
 function Marker({ event }: { event: MatchEvent }) {
   if (GOALS.has(event.type)) {
     return (
@@ -82,7 +81,6 @@ function describe(
   }
 }
 
-/** Aba "Eventos": linha do tempo do mais recente para o mais antigo. */
 export default function MatchTimeline({ details }: { details: MatchDetails }) {
   const { match, events, halfTime } = details;
   const team = (side: MatchEvent["side"]) =>
@@ -119,7 +117,6 @@ export default function MatchTimeline({ details }: { details: MatchDetails }) {
   };
 
   [...events].reverse().forEach((event, index) => {
-    // Marcador do intervalo entre o último lance do 2º tempo e o primeiro do 1º (45+2 ainda é 1º tempo).
     if (event.minute <= 45) addHalfTime();
     rows.push({
       key: `${index}-${event.minute}-${event.type}`,
@@ -129,7 +126,7 @@ export default function MatchTimeline({ details }: { details: MatchDetails }) {
       highlight: GOALS.has(event.type),
     });
   });
-  addHalfTime(); // 1º tempo sem lances
+  addHalfTime();
 
   return (
     <ol className="flex flex-col">

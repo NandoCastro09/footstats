@@ -14,7 +14,6 @@ const scorersQuerySchema = z.object({
 });
 
 export async function scorersRoutes(app: FastifyInstance) {
-  // GET /api/scorers?competition=BSA&team=1783&limit=20 — artilharia da temporada
   app.get("/scorers", async (request) => {
     const { competition, team, limit } = scorersQuerySchema.parse(request.query);
     const scorers = await app.dataSource.listScorers(resolveCompetition(app.dataSource, competition));

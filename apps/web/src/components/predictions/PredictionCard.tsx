@@ -15,7 +15,6 @@ interface PredictionCardProps {
 
 type Outcome = "exact" | "winner" | "wrong" | "pending";
 
-/** Compara o palpite com o resultado (só depois que a partida termina). */
 function outcomeOf({ match, homeGoals, awayGoals }: Prediction): Outcome {
   if (match.status !== "finished" || match.homeScore === null || match.awayScore === null) return "pending";
   if (match.homeScore === homeGoals && match.awayScore === awayGoals) return "exact";

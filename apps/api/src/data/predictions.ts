@@ -1,10 +1,5 @@
 import type { PredictionRecord } from "../types.js";
 
-/**
- * Palpites iniciais. A partida de cada um é definida quando a API sobe: o
- * 1º vai para o próximo jogo agendado, o 2º para o seguinte, e assim por
- * diante (funciona tanto com o mock quanto com dados reais).
- */
 export const predictionsSeed: Array<Omit<PredictionRecord, "matchId">> = [
   {
     id: "seed-1",

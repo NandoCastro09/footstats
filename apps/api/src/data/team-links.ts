@@ -1,15 +1,5 @@
 import { generatedTeamLinks } from "./team-links.generated.js";
 
-/**
- * Ligação entre os ids da football-data.org (chave) e da API-Football, mais a
- * cidade (a football-data.org não informa). É o que permite mostrar fotos,
- * número da camisa e técnico com foto.
- *
- * - Brasileirão (abaixo): conferido à mão em 05/11/2026.
- * - Demais ligas: team-links.generated.ts, gerado por scripts/link-teams.mjs
- *   (rode "pnpm link-teams" na próxima temporada, quando os times mudarem).
- * As entradas deste arquivo têm prioridade sobre as geradas.
- */
 const brasileiraoLinks: Record<string, { apiFootballId: number; city: string }> = {
   "1765": { apiFootballId: 124, city: "Rio de Janeiro (RJ)" }, // Fluminense
   "1766": { apiFootballId: 1062, city: "Belo Horizonte (MG)" }, // Atlético-MG
@@ -38,26 +28,15 @@ export const teamLinks: Record<string, { apiFootballId: number; city: string }> 
   ...brasileiraoLinks,
 };
 
-/**
- * Times em que o escudo da football-data.org é melhor que o da API-Football
- * (conferidos lado a lado em 08/11/2026). Nos demais, o da API-Football é igual
- * ou mais atual: o da football-data.org do Athletico-PR, por exemplo, é o de
- * antes de 2018.
- */
 const keepFootballDataCrest = new Set([
-  "109", // Juventus: o da API-Football é branco e some no fundo claro
+  "109",
   "454", // Venezia
-  "676", // Utrecht: o da API-Football é a versão comemorativa de 50 anos
+  "676",
   "678", // Ajax
   "5530", // Santa Clara
   "5533", // Gil Vicente
 ]);
 
-/**
- * Escudo do time. Usa o da API-Football quando o time está ligado: é mais atual
- * e vem de uma CDN rápida (a football-data.org leva de 1 a 2,5 s por imagem).
- * A URL é pública e não gasta a cota da API-Football.
- */
 export function crestFor(teamId: string, footballDataCrest: string | null): string | null {
   const link = teamLinks[teamId];
   if (!link || keepFootballDataCrest.has(teamId)) return footballDataCrest;

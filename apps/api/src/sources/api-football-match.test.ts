@@ -11,9 +11,8 @@ import {
 } from "./api-football.js";
 import { createFootballDataSource, type FetchJson } from "./football-data.js";
 
-// Resposta no formato real de /fixtures?id= (campos reduzidos).
-const HOME = 127; // Flamengo na API-Football
-const AWAY = 121; // Palmeiras
+const HOME = 127;
+const AWAY = 121;
 
 function lineupEntry(
   id: number,
@@ -204,7 +203,7 @@ describe("API-Football: detalhes da partida", () => {
     });
     expect(byKey.redCards).toMatchObject({ home: 0, away: 1 });
     expect(byKey.passAccuracy).toMatchObject({ home: 80, away: 75 });
-    expect(byKey.corners).toBeUndefined(); // a fonte não mandou: fica de fora
+    expect(byKey.corners).toBeUndefined();
   });
 
   it('escalações com esquema, técnico, grade e nota ("0" = sem nota)', () => {
@@ -282,7 +281,7 @@ describe("football-data.org + API-Football: getMatchDetails", () => {
   const fdFetch = (async (path: string) => {
     const id = Number(path.split("/").pop());
     if (id === 3) return fdMatch(3, "TIMED", "2026-11-09T19:00:00Z");
-    if (id === 4) return fdMatch(4, "FINISHED", "2026-10-20T22:00:00Z"); // fora da janela de datas
+    if (id === 4) return fdMatch(4, "FINISHED", "2026-10-20T22:00:00Z");
     return fdMatch(id, "IN_PLAY", "2026-11-05T11:00:00Z");
   }) as FetchJson;
 
@@ -304,7 +303,6 @@ describe("football-data.org + API-Football: getMatchDetails", () => {
         };
       }
       if (path === "/fixtures/headtohead?h2h=127-121") {
-        // Confrontos anteriores: só o da data da partida serve.
         return {
           response: [
             {
@@ -356,7 +354,7 @@ describe("football-data.org + API-Football: getMatchDetails", () => {
     });
     expect(details?.lineups?.home.formation).toBe("4-3-3");
     await src.getMatchDetails("1");
-    expect(af).toHaveBeenCalledTimes(2); // data + partida, só na primeira vez
+    expect(af).toHaveBeenCalledTimes(2);
   });
 
   it("partida antiga (fora de ontem–amanhã): acha pelo confronto direto e a data", async () => {

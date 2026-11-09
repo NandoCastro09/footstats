@@ -10,7 +10,6 @@ import type { Player, Scorer } from "../../types";
 const normalize = (text: string) =>
   text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
-/** A artilharia não traz foto: procura o jogador no elenco (por id e, se não achar, pelo nome). */
 function photoOf(scorer: Scorer, squad: Player[]) {
   const byId = squad.find((player) => player.id === scorer.player.id);
   if (byId) return byId.photo;
@@ -80,7 +79,6 @@ function ScorerRow({ scorer, rank, photo, max }: { scorer: Scorer; rank: number;
   );
 }
 
-/** Seção "Artilheiros" da página do time (requisição própria: tem seus próprios estados). */
 export default function TeamScorers({ teamId, competition, squad }: { teamId: string; competition: string; squad: Player[] }) {
   const { data: scorers, isPending, isError, error, refetch, isFetching } = useScorers({ competition, team: teamId });
 

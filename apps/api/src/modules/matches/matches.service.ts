@@ -4,7 +4,6 @@ import { notFound } from "../../lib/errors.js";
 import { normalize } from "../../lib/text.js";
 import type { MatchesQuery } from "./matches.schemas.js";
 
-// Ao vivo primeiro, depois as próximas, depois as encerradas mais recentes.
 const statusOrder: Record<MatchStatus, number> = { live: 0, scheduled: 1, finished: 2 };
 
 export async function listMatches(

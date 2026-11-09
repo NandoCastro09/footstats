@@ -11,7 +11,7 @@ export default function Layout() {
   const mainRef = useRef<HTMLElement>(null);
   const firstRender = useRef(true);
 
-  // Ao trocar de página, leva o foco para o conteúdo (leitor de tela anuncia a nova página).
+  // Ao trocar de página: volta ao topo e leva o foco para o conteúdo (leitor de tela anuncia a página nova).
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
@@ -23,7 +23,6 @@ export default function Layout() {
 
   return (
     <div
-      // pb-20: no mobile, o rodapé não fica escondido atrás da barra inferior.
       className="flex min-h-screen flex-col pb-20 lg:pb-0"
     >
       <a
@@ -38,11 +37,8 @@ export default function Layout() {
         id="conteudo"
         ref={mainRef}
         tabIndex={-1}
-        // min-h-screen: o rodapé fica sempre abaixo da dobra, então a troca
-        // skeleton → conteúdo não "empurra" o rodapé na tela (evita CLS).
         className="mx-auto min-h-screen w-full max-w-6xl flex-1 px-4 py-8 outline-none"
       >
-        {/* Enquanto o código da página (lazy) é baixado: skeleton no formato da tela. */}
         <Suspense fallback={<RouteSkeleton />}>
           <Outlet />
         </Suspense>

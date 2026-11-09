@@ -15,7 +15,6 @@ import {
 } from "./modules/predictions/predictions.service.js";
 import { createDataSource, type DataSource } from "./sources/index.js";
 
-// Disponíveis em todas as rotas como app.dataSource / app.predictions.
 declare module "fastify" {
   interface FastifyInstance {
     dataSource: DataSource;
@@ -23,10 +22,6 @@ declare module "fastify" {
   }
 }
 
-/**
- * "http://localhost:5173,https://footstats-*.vercel.app" → verificador de origem.
- * O * aceita só letras, números e hífen (um subdomínio de preview da Vercel).
- */
 export function createOriginMatcher(list: string) {
   const patterns = list
     .split(",")
@@ -42,7 +37,6 @@ export function createOriginMatcher(list: string) {
     });
 
   return (origin: string | undefined) =>
-    // Sem Origin (curl, health check do Render) não é requisição de navegador.
     !origin ||
     patterns.some((pattern) =>
       typeof pattern === "string" ? pattern === origin : pattern.test(origin)
@@ -52,7 +46,6 @@ export function createOriginMatcher(list: string) {
 interface CreateAppOptions {
   env?: Env;
   logger?: FastifyServerOptions["logger"];
-  /** Substitui a fonte de dados (usado nos testes). */
   dataSource?: DataSource;
 }
 

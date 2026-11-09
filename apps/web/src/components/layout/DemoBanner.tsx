@@ -1,7 +1,6 @@
 import { FlaskConical } from "lucide-react";
 import { useDemoSettings, useUpdateDemoSettings } from "../../services/demoSettings";
 
-/** Aviso no topo enquanto a simulação estiver ligada (para não esquecer ligada). */
 export default function DemoBanner() {
   const { error, delay } = useDemoSettings();
   const setDemoSettings = useUpdateDemoSettings();

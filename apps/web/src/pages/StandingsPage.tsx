@@ -30,7 +30,6 @@ function Highlight({
   label: string;
   standing: Standing;
   value: string;
-  /** Card do líder: inteiro em lime, texto escuro. */
   featured?: boolean;
   children?: ReactNode;
 }) {
@@ -81,7 +80,6 @@ function highlights(standings: Standing[]) {
 
 const PREVIEW = 10;
 
-/** Artilharia do campeonato: 10 primeiros, com botão para ver todos. */
 function LeagueScorers() {
   const { code, competition } = useLeague();
   const { data: scorers, isPending, isError, error, refetch, isFetching } = useScorers({ competition: code, limit: 100 });
@@ -143,7 +141,6 @@ export default function StandingsPage() {
         description="Pontos, saldo e a sequência dos últimos jogos de cada time. Clique no cabeçalho de uma coluna para ordenar."
       >
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-          {/* A fonte de dados só traz a tabela geral (sem mandante/visitante). */}
           <p className="rounded-[14px] border border-line bg-surface p-1">
             <span className="inline-flex min-h-touch items-center rounded-[10px] bg-lime px-5 text-sm font-bold text-ink-inverse">
               Tabela geral

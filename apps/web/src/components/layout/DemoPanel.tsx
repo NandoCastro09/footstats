@@ -21,7 +21,6 @@ const delayOptions: Array<{ value: DemoSettings["delay"]; label: string }> = [
   { value: 3000, label: "3 segundos" },
 ];
 
-/** Liga erros/latência simulados na API para demonstrar o tratamento de erros. */
 export default function DemoPanel() {
   const settings = useDemoSettings();
   const setDemoSettings = useUpdateDemoSettings();

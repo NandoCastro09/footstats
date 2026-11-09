@@ -15,7 +15,6 @@ import { useLeague } from "../league/leagueContext";
 import { cn } from "../lib/cn";
 import { ApiError } from "../services/api";
 
-/** Trilha: "← Classificação / Nome do time". */
 function Breadcrumb({ current }: { current?: string }) {
   return (
     <nav aria-label="Trilha">
@@ -44,7 +43,6 @@ function Breadcrumb({ current }: { current?: string }) {
   );
 }
 
-/** Abas-âncora para as seções; a ativa acompanha a rolagem. */
 function SectionTabs({ sections }: { sections: Array<{ id: string; label: string }> }) {
   const [active, setActive] = useState(sections[0]?.id);
   const ids = sections.map((section) => section.id).join(",");
@@ -59,7 +57,6 @@ function SectionTabs({ sections }: { sections: Array<{ id: string; label: string
         const visible = entries.filter((entry) => entry.isIntersecting);
         if (visible.length > 0) setActive(visible[0].target.id);
       },
-      // "Ativa" = a seção que está na faixa de cima da tela (abaixo do header).
       { rootMargin: "-90px 0px -60% 0px" }
     );
     elements.forEach((element) => observer.observe(element));

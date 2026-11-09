@@ -17,10 +17,6 @@ interface FilterPillsProps<T extends string> {
   className?: string;
 }
 
-/**
- * Grupo de filtros com cara de "pílulas", mas feito de radios nativos:
- * setas do teclado, Tab e leitores de tela funcionam sem código extra.
- */
 export default function FilterPills<T extends string>({
   legend,
   name,

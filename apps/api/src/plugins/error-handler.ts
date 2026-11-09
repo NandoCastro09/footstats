@@ -3,19 +3,19 @@ import { ZodError } from "zod";
 import { AppError, validationError, type ErrorBody } from "../lib/errors.js";
 import { zodErrorToDetails } from "../lib/validation.js";
 
-/** Todas as falhas saem no formato { error, message, details? }. */
+// Todo erro sai no mesmo formato { error, message, details? }, que o front sabe ler.
 export function registerErrorHandler(app: FastifyInstance) {
   app.setErrorHandler((error: FastifyError | Error, request, reply) => {
     if (error instanceof AppError) {
       return reply.status(error.statusCode).send(error.toBody());
     }
 
+    // Falha na validação do zod vira 400 com o erro de cada campo em "details".
     if (error instanceof ZodError) {
       const appError = validationError(zodErrorToDetails(error));
       return reply.status(400).send(appError.toBody());
     }
 
-    // Erros do próprio Fastify (JSON malformado, corpo vazio, 415...).
     const statusCode = "statusCode" in error ? error.statusCode : undefined;
     if (statusCode && statusCode >= 400 && statusCode < 500) {
       const body: ErrorBody = {

@@ -10,7 +10,6 @@ const goals = (side: string) =>
     .min(0, "O placar não pode ser negativo.")
     .max(20, "O placar máximo é 20.");
 
-/** Corpo do POST e do PUT (o PUT substitui o palpite inteiro). */
 export const predictionBodySchema = z.object(
   {
     name: z

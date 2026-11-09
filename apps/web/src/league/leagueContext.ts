@@ -4,9 +4,7 @@ import type { Competition } from "../types";
 export const DEFAULT_LEAGUE = "BSA";
 
 export interface LeagueContextValue {
-  /** Código da liga selecionada (BSA, PL, PD...). */
   code: string;
-  /** Dados da liga selecionada (undefined enquanto a lista carrega). */
   competition: Competition | undefined;
   competitions: Competition[];
   setLeague: (code: string) => void;

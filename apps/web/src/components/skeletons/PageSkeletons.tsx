@@ -1,8 +1,3 @@
-/**
- * Skeletons que seguem o layout de cada tela (mesmas grades, alturas e posições),
- * para a troca skeleton → conteúdo não "pular". Usados na troca de tela
- * (Suspense das rotas) e enquanto cada request está em andamento.
- */
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import S, { SkeletonRegion } from "../Skeleton";
@@ -10,9 +5,6 @@ import { cn } from "../../lib/cn";
 
 const range = (count: number) => Array.from({ length: count }, (_, index) => index);
 
-// ---------------------------------------------------------------- comuns
-
-/** Mesmo grid do <PageHero>: eyebrow, título gigante, texto, números e coluna da direita. */
 export function HeroSkeleton({
   aside,
   stats = false,
@@ -51,12 +43,10 @@ export function HeroSkeleton({
   );
 }
 
-/** Título de seção grande ("PRÓXIMAS PARTIDAS"). */
 export function SectionTitleSkeleton({ className }: { className?: string }) {
   return <S className={cn("h-9 w-72 max-w-full", className)} />;
 }
 
-/** Busca + segmentado (Partidas e Ligas). */
 export function FilterBarSkeleton() {
   return (
     <div className="flex flex-wrap items-end gap-4 rounded-2xl border border-line bg-surface p-4">
@@ -69,7 +59,6 @@ export function FilterBarSkeleton() {
   );
 }
 
-/** Cabeçalho de grupo: "SÁBADO, 14 DE NOVEMBRO ——— 2 jogos". */
 function GroupHeaderSkeleton() {
   return (
     <div className="flex items-center gap-4">
@@ -79,8 +68,6 @@ function GroupHeaderSkeleton() {
     </div>
   );
 }
-
-// ---------------------------------------------------------------- partidas
 
 export function FeaturedMatchSkeleton() {
   const side = (
@@ -119,7 +106,6 @@ export function FeaturedMatchSkeleton() {
   );
 }
 
-/** Mesma estrutura do <MatchCard> (linha: horário | times | estádio | botão). */
 export function MatchRowSkeleton() {
   const team = (reverse: boolean) => (
     <div className={cn("flex flex-col items-center gap-2 sm:flex-row sm:gap-3", reverse && "sm:flex-row-reverse")}>
@@ -146,7 +132,6 @@ export function MatchRowSkeleton() {
   );
 }
 
-/** Seção de partidas: título + grupo do dia + linhas. */
 export function MatchListSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="space-y-5">
@@ -171,8 +156,6 @@ export function MatchesPageSkeleton() {
   );
 }
 
-// ---------------------------------------------------------------- classificação
-
 export function HighlightCardsSkeleton() {
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
@@ -192,7 +175,6 @@ export function HighlightCardsSkeleton() {
   );
 }
 
-/** Tabela (classificação ou artilharia): cabeçalho + linhas. */
 export function TableSkeleton({ rows = 10, form = true }: { rows?: number; form?: boolean }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-surface">
@@ -233,7 +215,6 @@ export function TableSkeleton({ rows = 10, form = true }: { rows?: number; form?
   );
 }
 
-/** Destaques + tabela + artilharia (o que carrega depois do topo da página). */
 export function StandingsContentSkeleton() {
   return (
     <SkeletonRegion label="Carregando classificação…" className="space-y-10">
@@ -258,8 +239,6 @@ export function StandingsPageSkeleton() {
     </SkeletonRegion>
   );
 }
-
-// ---------------------------------------------------------------- palpites
 
 export function PredictionCardSkeleton() {
   return (
@@ -327,8 +306,6 @@ export function PredictionsPageSkeleton() {
     </SkeletonRegion>
   );
 }
-
-// ---------------------------------------------------------------- time
 
 function TeamHeaderSkeleton() {
   return (
@@ -435,8 +412,6 @@ export function TeamPageSkeleton() {
   );
 }
 
-// ---------------------------------------------------------------- ligas
-
 export function CurrentLeagueSkeleton() {
   return (
     <div className="rounded-panel border-2 border-line bg-surface p-6">
@@ -501,8 +476,6 @@ export function LeaguesPageSkeleton() {
   );
 }
 
-// ---------------------------------------------------------------- partida
-
 export function MatchPageSkeleton() {
   const side = (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
@@ -545,9 +518,6 @@ export function MatchPageSkeleton() {
   );
 }
 
-// ---------------------------------------------------------------- troca de tela
-
-/** Skeleton da próxima tela enquanto o código dela (lazy) é baixado. */
 export function RouteSkeleton() {
   const { pathname } = useLocation();
   if (pathname === "/") return <MatchesPageSkeleton />;

@@ -3,12 +3,6 @@ interface Entry<T> {
   expiresAt: number;
 }
 
-/**
- * Cache em memória com validade (TTL), pensado para APIs com limite de
- * requisições:
- * - várias chamadas simultâneas para a mesma chave fazem UMA requisição;
- * - se a atualização falhar, devolve o último valor bom (mesmo vencido).
- */
 export function createCache(now: () => number = Date.now) {
   const entries = new Map<string, Entry<unknown>>();
   const inFlight = new Map<string, Promise<unknown>>();
@@ -17,6 +11,8 @@ export function createCache(now: () => number = Date.now) {
     const entry = entries.get(key) as Entry<T> | undefined;
     if (entry && entry.expiresAt > now()) return entry.value;
 
+    // Se a mesma chave já está sendo buscada, reaproveita a mesma promise
+    // (10 usuários abrindo a tabela ao mesmo tempo = 1 requisição só).
     const pending = inFlight.get(key) as Promise<T> | undefined;
     if (pending) return pending;
 
@@ -26,7 +22,8 @@ export function createCache(now: () => number = Date.now) {
         return value;
       })
       .catch((error) => {
-        if (entry) return entry.value; // dado vencido é melhor que nenhum
+        // Se a API externa falhar, devolve o dado vencido em vez de erro.
+        if (entry) return entry.value;
         throw error;
       })
       .finally(() => inFlight.delete(key));
@@ -35,7 +32,6 @@ export function createCache(now: () => number = Date.now) {
     return request;
   }
 
-  /** Último valor guardado (mesmo vencido), sem disparar requisição. */
   function peek<T>(key: string): T | undefined {
     return (entries.get(key) as Entry<T> | undefined)?.value;
   }

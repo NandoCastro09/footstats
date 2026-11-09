@@ -7,7 +7,6 @@ import type { Match, TeamSummary } from "../types";
 
 interface MatchCardProps {
   match: Match;
-  /** Rodada atual da liga: partida agendada de rodada anterior aparece como "Adiada". */
   currentRound?: number;
 }
 
@@ -20,7 +19,6 @@ function describeMatch(match: Match) {
   return `${homeTeam.name} ${homeScore}, ${awayTeam.name} ${awayScore}, ${situation}`;
 }
 
-/** Ponto pulsando + "AO VIVO" (o texto garante que não depende só da cor). */
 export function LiveChip({ minute }: { minute?: number | null }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-live-light px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] text-live-text">
@@ -41,8 +39,6 @@ function TeamName({
   dim: boolean;
 }) {
   return (
-    // Celular: escudo em cima e nome embaixo (o nome ganha a largura toda da coluna
-    // e não quebra no meio da palavra). A partir de sm: lado a lado.
     <div
       className={cn(
         "flex min-w-0 flex-col items-center gap-2 text-center sm:flex-row sm:gap-3",
@@ -53,7 +49,6 @@ function TeamName({
       <Link
         to={`/times/${team.id}`}
         className={cn(
-          // relative z-10: fica acima do link que cobre a linha inteira.
           "relative z-10 min-w-0 max-w-full rounded-control font-display text-base font-bold uppercase leading-tight underline-offset-2 hover:underline sm:text-xl",
           dim ? "text-muted hover:text-ink" : "text-ink hover:text-lime"
         )}
@@ -64,10 +59,6 @@ function TeamName({
   );
 }
 
-/**
- * Partida em LINHA, estilo placar: horário | times | estádio | ação.
- * No celular quebra em 3 linhas (horário · times · estádio + botão).
- */
 export default function MatchCard({ match, currentRound }: MatchCardProps) {
   const { homeTeam, awayTeam, homeScore, awayScore, status } = match;
   const hasScore = homeScore !== null && awayScore !== null;
@@ -87,7 +78,6 @@ export default function MatchCard({ match, currentRound }: MatchCardProps) {
         "hover:border-line-strong"
       )}
     >
-      {/* 1. Horário / status + rodada */}
       <div className="flex w-full items-baseline gap-3 sm:w-[84px] sm:flex-col sm:gap-1">
         {live ? (
           <LiveChip minute={match.minute} />
@@ -103,14 +93,12 @@ export default function MatchCard({ match, currentRound }: MatchCardProps) {
         <span className="text-xs font-medium uppercase tracking-[0.08em] text-muted">Rodada {match.round}</span>
       </div>
 
-      {/* 2. Times + placar */}
       <div className="grid min-w-0 flex-[1_1_380px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
         <TeamName team={homeTeam} align="right" dim={awayWins} />
-        {/* O link cobre a linha inteira (after:inset-0): clicar em qualquer ponto
-            abre a partida; nomes dos times e o botão continuam com o próprio link. */}
         <Link
           to={`/partidas/${match.id}`}
           className={cn(
+            // O ::after deste link cobre a linha inteira: clicar em qualquer ponto abre a partida.
             "rounded-control after:absolute after:inset-0 after:rounded-[14px] after:content-['']",
             "focus-visible:outline-none focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-lime"
           )}
@@ -137,7 +125,6 @@ export default function MatchCard({ match, currentRound }: MatchCardProps) {
         <TeamName team={awayTeam} align="left" dim={homeWins} />
       </div>
 
-      {/* 3. Estádio + aviso de adiada */}
       <div className="flex min-w-0 flex-[1_1_150px] flex-wrap items-center gap-2 text-[13px] text-muted sm:flex-[1_1_220px]">
         {match.venue && (
           <span className="flex min-w-0 items-center gap-1.5">
@@ -152,7 +139,6 @@ export default function MatchCard({ match, currentRound }: MatchCardProps) {
         )}
       </div>
 
-      {/* 4. Ação */}
       {status === "scheduled" ? (
         <Link
           to={`/palpites?partida=${match.id}`}

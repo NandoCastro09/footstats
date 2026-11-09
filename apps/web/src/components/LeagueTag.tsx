@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ArrowLeftRight } from "lucide-react";
 import { useLeague } from "../league/leagueContext";
 
-/** "Premier League · 2026/27 · Trocar liga" no topo das telas que dependem da liga. */
 export default function LeagueTag() {
   const { competition } = useLeague();
 

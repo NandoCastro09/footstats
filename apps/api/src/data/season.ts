@@ -2,13 +2,7 @@ import type { MatchStatus } from "../types.js";
 import { createRandom, poisson, type Random } from "../lib/random.js";
 import { teams, teamsById, type TeamRecord } from "./teams.js";
 
-// Temporada mock: calendário de turno e returno (38 rodadas) com as rodadas
-// 1–32 simuladas. A classificação é calculada a partir desses resultados,
-// então tudo fica consistente. As datas são relativas ao momento em que a
-// API sobe, para "ao vivo" e "agendado" fazerem sentido em qualquer dia.
-
 export const CURRENT_ROUND = 33;
-/** Rodadas expostas em GET /api/matches. */
 export const VISIBLE_ROUNDS = [32, 33, 34];
 
 export interface MatchRecord {
@@ -23,7 +17,6 @@ export interface MatchRecord {
   kickoff: Date;
 }
 
-/** Método do círculo: cada time enfrenta todos os outros uma vez por turno. */
 function buildRounds(ids: string[]): Array<Array<[string, string]>> {
   const list = [...ids];
   const n = list.length;
@@ -34,7 +27,6 @@ function buildRounds(ids: string[]): Array<Array<[string, string]>> {
     for (let i = 0; i < n / 2; i++) {
       const a = list[i];
       const b = list[n - 1 - i];
-      // Alterna o mando para equilibrar jogos em casa e fora.
       pairs.push((round + i) % 2 === 0 ? [a, b] : [b, a]);
     }
     firstLeg.push(pairs);
@@ -52,7 +44,6 @@ function expectedGoals(attack: TeamRecord, defense: TeamRecord, home: boolean) {
   return base * (attack.strength / defense.strength);
 }
 
-// Brasil não tem horário de verão desde 2019: São Paulo = UTC-3 fixo.
 const SP_OFFSET_HOURS = 3;
 
 function atSaoPaulo(now: Date, dayOffset: number, hour: number, minute = 0) {
@@ -68,7 +59,6 @@ function atSaoPaulo(now: Date, dayOffset: number, hour: number, minute = 0) {
   );
 }
 
-// Horários (dia relativo à data-base da rodada, hora, minuto) dos 10 jogos.
 const slots: Array<[number, number, number]> = [
   [0, 16, 0], [0, 18, 30], [0, 21, 0],
   [1, 16, 0], [1, 16, 0], [1, 18, 30], [1, 18, 30], [1, 20, 30],
@@ -91,7 +81,6 @@ export function buildSeason(now = new Date()): MatchRecord[] {
 
   rounds.forEach((pairs, roundIndex) => {
     const round = roundIndex + 1;
-    // Rodada atual começa hoje; cada rodada anterior/posterior fica 7 dias antes/depois.
     const baseDay = (round - CURRENT_ROUND) * 7;
 
     pairs.forEach(([homeId, awayId], index) => {

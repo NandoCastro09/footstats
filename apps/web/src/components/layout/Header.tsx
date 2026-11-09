@@ -6,7 +6,6 @@ import { navLinks } from "./navLinks";
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
   return cn(
-    // h-full + after: o sublinhado de 3px fica colado na borda de baixo do header.
     "relative flex h-full min-h-touch items-center px-1 text-[15px] transition-colors",
     "after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:rounded-t-sm after:content-['']",
     isActive
@@ -15,7 +14,6 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
   );
 }
 
-/** Topo fixo. No mobile a navegação fica na barra inferior (BottomNav). */
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/95 backdrop-blur">
@@ -32,7 +30,6 @@ export default function Header() {
           <ul className="flex h-full gap-7">
             {navLinks.map((link) => (
               <li key={link.to} className="h-full">
-                {/* NavLink já coloca aria-current="page" no link ativo. */}
                 <NavLink to={link.to} end={link.end} className={navLinkClass}>
                   {link.label}
                 </NavLink>

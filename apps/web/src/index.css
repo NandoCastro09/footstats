@@ -4,17 +4,13 @@
 
 @layer base {
   :root {
-    /* Controles nativos (select, scrollbar, date) no modo escuro. */
     color-scheme: dark;
   }
 
   body {
     @apply bg-surface-subtle font-sans text-ink antialiased;
-    /* Proteção: nada pode deixar a página mais larga que a tela. No iPhone isso
-       faz o navegador reduzir o zoom e o layout ocupa só metade da tela.
-       (clip, e não hidden, para não quebrar o cabeçalho sticky.) */
+    /* Nada pode deixar a página mais larga que a tela (no iPhone isso reduz o zoom). */
     overflow-x: clip;
-    /* Raleway usa algarismos "antigos" por padrão; números alinhados leem melhor. */
     font-feature-settings: "lnum";
   }
 
@@ -25,16 +21,12 @@
     @apply font-display;
   }
 
-  /* Enquanto a imagem carrega, o Firefox escreve o texto alternativo ("Escudo do
-     Liverpool") por cima do layout. Texto transparente e corte escondem isso sem
-     tirar o alt dos leitores de tela. Se a imagem falhar, os componentes trocam
-     por sigla ou iniciais (onError). */
+  /* Esconde o texto alternativo enquanto a imagem carrega (o Firefox o desenhava por cima do layout). */
   img {
     color: transparent;
     overflow: hidden;
   }
 
-  /* Foco sempre visível (teclado), em lime. */
   :focus-visible {
     outline: 2px solid theme("colors.lime");
     outline-offset: 2px;
@@ -51,15 +43,12 @@
 }
 
 @layer components {
-  /* Rótulo de seção do protótipo: "PRÓXIMOS JOGOS", "ELENCO"… */
   .eyebrow {
     @apply font-sans text-xs font-semibold uppercase tracking-label text-ink-muted;
   }
 }
 
 @layer utilities {
-  /* Escudos e emblemas com partes pretas somem no fundo escuro: um contorno
-     claro de 1px mantém a silhueta visível sem mudar a imagem. */
   .logo-outline {
     filter: drop-shadow(0 0 1px rgba(243, 242, 237, 0.5));
   }

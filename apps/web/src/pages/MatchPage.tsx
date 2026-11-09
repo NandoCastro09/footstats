@@ -35,7 +35,6 @@ const tabs: TabItem<TabKey>[] = [
 const PREFIX = "partida";
 const icon = "h-10 w-10 text-ink-muted";
 
-/** Aba inicial: jogo agendado abre na escalação; os outros, nas estatísticas. */
 function defaultTab(details: MatchDetails): TabKey {
   if (details.match.status === "scheduled") return "escalacao";
   if (details.statistics.length === 0 && details.events.length > 0)
@@ -206,7 +205,6 @@ export default function MatchPage() {
       {details.match.status === "scheduled" && (
         <p className="flex items-center gap-2 text-sm text-ink-muted">
           <CalendarClock className="h-4 w-4 shrink-0" aria-hidden="true" />
-          {/* Texto num span: dentro do flex, cada pedaço viraria item com espaço entre eles. */}
           <span>
             Partida ainda não começou. Que tal{" "}
             <Link

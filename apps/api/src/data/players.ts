@@ -2,8 +2,6 @@ import type { Player, PlayerPosition } from "../types.js";
 import { createRandom, pick, randomInt, type Random } from "../lib/random.js";
 import { teams } from "./teams.js";
 
-// Elencos fictícios gerados de forma determinística (mesma semente → mesmos jogadores).
-
 const firstNames = [
   "Lucas", "Gabriel", "Matheus", "Pedro", "Rafael", "Gustavo", "Felipe", "Bruno",
   "Thiago", "Vitor", "Diego", "Rodrigo", "Caio", "Igor", "João", "Arthur",
@@ -51,7 +49,6 @@ function createSquad(teamId: string, seed: number): Player[] {
     used.add(name);
 
     const range = statRanges[position];
-    // Titulares (números baixos) participam mais.
     const weight = number <= 11 ? 1 : 0.45;
     return {
       id: `${teamId}-${number}`,

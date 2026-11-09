@@ -2,19 +2,14 @@ import type { ReactNode } from "react";
 import { cn } from "../lib/cn";
 
 interface PageHeroProps {
-  /** Linha pequena acima do título ("PARTIDAS · BRASILEIRÃO SÉRIE A 2026"). */
   eyebrow: ReactNode;
-  /** Conteúdo do <h1> (pode ter um trecho em lime). */
   title: ReactNode;
   description?: ReactNode;
-  /** Conteúdo abaixo do texto (números, links). */
   children?: ReactNode;
-  /** Coluna da direita (card em destaque, segmentado...). */
   aside?: ReactNode;
   className?: string;
 }
 
-/** Topo das páginas no estilo "placar de estádio": eyebrow + título gigante condensado. */
 export default function PageHero({ eyebrow, title, description, children, aside, className }: PageHeroProps) {
   return (
     <header
@@ -40,7 +35,6 @@ export default function PageHero({ eyebrow, title, description, children, aside,
   );
 }
 
-/** Números grandes do hero ("31 partidas · 11 próximas · 20 encerradas"). */
 export function HeroStats({ items }: { items: Array<{ value: ReactNode; label: string; accent?: boolean }> }) {
   return (
     <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-4">
@@ -61,7 +55,6 @@ export function HeroStats({ items }: { items: Array<{ value: ReactNode; label: s
   );
 }
 
-/** Título de seção grande ("PRÓXIMAS PARTIDAS"). */
 export function SectionTitle({
   id,
   children,
@@ -71,7 +64,6 @@ export function SectionTitle({
   id?: string;
   children: ReactNode;
   className?: string;
-  /** "md" para colunas estreitas (lista lateral). */
   size?: "md" | "lg";
 }) {
   return (

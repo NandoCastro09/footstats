@@ -21,8 +21,6 @@ describe("samePerson: nomes escritos de jeitos diferentes", () => {
   ])("%s ≠ %s", (a, b) => expect(samePerson(a, b)).toBe(false));
 });
 
-// ---- API-Football (respostas falsas) ----
-
 function apiFootballFetch(overrides: Record<string, unknown> = {}) {
   const responses: Record<string, unknown> = {
     "/players/squads?team=127": {
@@ -57,7 +55,7 @@ describe("API-Football: elenco e técnicos", () => {
     const enrichment = createApiFootballEnrichment({ fetchJson: apiFootballFetch(), now: () => NOW });
     const squad = (await enrichment.squad("1783"))!;
     expect(squad[1]).toMatchObject({ name: "Pedro", number: 9, position: "Atacante", age: 29, photo: "https://media/9.png" });
-    expect(await enrichment.squad("999999")).toBeNull(); // time sem ligação
+    expect(await enrichment.squad("999999")).toBeNull();
   });
 
   it("técnicos com vínculo em aberto, do mais recente ao mais antigo", async () => {
@@ -72,14 +70,12 @@ describe("API-Football: elenco e técnicos", () => {
     const fetchJson = apiFootballFetch({ "/coachs?team=127": new Error("rateLimit") });
     const enrichment = createApiFootballEnrichment({ fetchJson, now: () => time });
     await expect(enrichment.coaches("1783")).rejects.toThrow("rateLimit");
-    await expect(enrichment.squad("1783")).rejects.toThrow("pausa"); // nem chega a chamar
+    await expect(enrichment.squad("1783")).rejects.toThrow("pausa");
     expect(fetchJson).toHaveBeenCalledTimes(1);
     time += 61_000;
     await expect(enrichment.squad("1783")).resolves.toHaveLength(2);
   });
 });
-
-// ---- Junção das fontes na página do time ----
 
 const fla = { id: 1783, name: "CR Flamengo", shortName: "Flamengo", tla: "FLA", crest: null };
 const vas = { id: 1780, name: "CR Vasco da Gama", shortName: "Vasco da Gama", tla: "VAS", crest: null };
@@ -108,7 +104,6 @@ describe("página do time: football-data.org + API-Football", () => {
     const source = createFootballDataSource({ fetchJson: footballDataFetch, now: () => NOW, enrichment });
     const team = (await source.getTeam("1783"))!;
     expect(team.squad.map((p) => p.name)).toEqual(["A. Rossi", "Pedro"]);
-    // Nome "bonito" da football-data.org + foto da API-Football ("L. Jardim").
     expect(team.coach).toEqual({ name: "Leonardo Jardim", photo: "https://media/c2.png", nationality: "Portugal", age: 52 });
     expect(source.info().providers.map((p) => p.name)).toEqual(["football-data.org", "API-Football"]);
   });
@@ -117,8 +112,8 @@ describe("página do time: football-data.org + API-Football", () => {
     const enrichment: TeamEnrichment = { squad: async () => [], coaches: async () => [] };
     const source = createFootballDataSource({ fetchJson: footballDataFetch, now: () => NOW, enrichment });
     const team = (await source.getTeam("1780"))!;
-    expect(team.coach?.name).toBe("Pedro Emanuel"); // e não "Possato"
-    expect(team.coach?.photo).toBeNull(); // sem foto de outra pessoa
+    expect(team.coach?.name).toBe("Pedro Emanuel");
+    expect(team.coach?.photo).toBeNull();
   });
 
   it("se a API-Football falhar, a página sai com o elenco da football-data.org", async () => {

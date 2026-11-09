@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type MatchFilters, type ScorerFilters } from "../services/api";
 import type { PredictionInput } from "../types";
 
-// Chaves do cache. Invalidar uma chave faz o React Query buscar de novo.
+// Chaves do cache do React Query: mesma chave = mesmo dado em cache.
 export const queryKeys = {
   matches: (filters: MatchFilters = {}) => ["matches", filters] as const,
   match: (id: string) => ["matches", "detail", id] as const,
@@ -14,17 +14,14 @@ export const queryKeys = {
   predictions: ["predictions"] as const,
 };
 
-// ---- GET (useQuery) ----
-
 export function useMatches(filters: MatchFilters = {}) {
   return useQuery({
     queryKey: queryKeys.matches(filters),
     queryFn: () => api.matches.list(filters),
-    placeholderData: (previous) => previous, // mantém a lista ao trocar filtro
+    placeholderData: (previous) => previous,
   });
 }
 
-/** Partida com estatísticas, escalações e eventos; ao vivo, atualiza a cada minuto. */
 export function useMatchDetails(id: string) {
   return useQuery({
     queryKey: queryKeys.matchDetails(id),
@@ -33,7 +30,6 @@ export function useMatchDetails(id: string) {
   });
 }
 
-/** Ligas disponíveis (mudam raramente: cache longo). */
 export function useCompetitions() {
   return useQuery({
     queryKey: queryKeys.competitions,
@@ -53,7 +49,6 @@ export function useTeam(id: string) {
   return useQuery({ queryKey: queryKeys.team(id), queryFn: () => api.teams.get(id) });
 }
 
-/** Artilharia da temporada (do campeonato ou de um time). */
 export function useScorers(filters: ScorerFilters, enabled = true) {
   return useQuery({
     queryKey: queryKeys.scorers(filters),
@@ -62,7 +57,6 @@ export function useScorers(filters: ScorerFilters, enabled = true) {
   });
 }
 
-/** De onde vêm os dados (football-data.org, mock, ou mock como reserva). */
 export function useDataSource() {
   return useQuery({
     queryKey: ["health"],
@@ -77,8 +71,7 @@ export function usePredictions() {
   return useQuery({ queryKey: queryKeys.predictions, queryFn: api.predictions.list });
 }
 
-// ---- POST / PUT / DELETE (useMutation) ----
-
+// Depois de criar/editar/excluir, invalida a lista de palpites para ela ser buscada de novo.
 export function useCreatePrediction() {
   const queryClient = useQueryClient();
   return useMutation({

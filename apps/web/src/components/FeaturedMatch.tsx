@@ -6,7 +6,6 @@ import { LiveChip } from "./MatchCard";
 import { formatShortDate, formatTime } from "../lib/format";
 import type { Match, TeamSummary } from "../types";
 
-/** Atualiza "agora" a cada 30 s (o menor intervalo exibido é o minuto). */
 function useNow() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -39,7 +38,6 @@ function Side({ team }: { team: TeamSummary }) {
   );
 }
 
-/** Card "Jogo em destaque" do topo da página de partidas. */
 export default function FeaturedMatch({ match }: { match: Match }) {
   const now = useNow();
   const live = match.status === "live";
@@ -55,7 +53,6 @@ export default function FeaturedMatch({ match }: { match: Match }) {
       aria-labelledby="destaque-titulo"
       className="relative overflow-hidden rounded-panel border border-[#243027] bg-surface p-5 sm:p-7"
     >
-      {/* Decoração: círculo central e linha do meio do campo, cortados no canto. */}
       <svg
         aria-hidden="true"
         viewBox="0 0 200 200"

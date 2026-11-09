@@ -20,24 +20,18 @@ import { samePerson } from "../lib/names.js";
 import type { TeamEnrichment } from "./api-football.js";
 import type { DataSource } from "./types.js";
 
-// Fonte real: football-data.org (API v4), várias ligas (data/competitions.ts).
-// Plano gratuito: 10 requisições/minuto NO TOTAL. O cache é separado por liga
-// e garante ~1 requisição/minuto por liga aberta, mesmo com muita gente usando.
-
 const BASE_URL = "https://api.football-data.org/v4";
+// Plano gratuito da football-data: 10 requisições por minuto. Por isso o cache.
 const TTL = {
-  match: 5 * 60_000, // partida avulsa (palpite de uma liga que não está em cache)
-  matches: 60_000, // placares mudam: 1 min
+  match: 5 * 60_000,
+  matches: 60_000,
   standings: 5 * 60_000,
   scorers: 10 * 60_000,
-  teams: 12 * 60 * 60_000, // elencos quase não mudam
+  teams: 12 * 60 * 60_000,
 };
 const FORM_LENGTH = 5;
 const DAY = 24 * 60 * 60_000;
-/** Escalações saem ~1 h antes: antes disso não vale gastar requisição da API-Football. */
 const LINEUPS_WINDOW = 90 * 60_000;
-
-// ---- Formato das respostas (só os campos usados) ----
 
 interface FdTeamRef {
   id: number;
@@ -113,7 +107,6 @@ export interface FdScorersResponse {
 
 export type FetchJson = <T>(path: string) => Promise<T>;
 
-/** fetch autenticado na football-data.org. Lança erro em qualquer resposta não-2xx. */
 export function createFootballDataFetch(token: string): FetchJson {
   return async <T>(path: string) => {
     const response = await fetch(`${BASE_URL}${path}`, {
@@ -130,13 +123,10 @@ export function createFootballDataFetch(token: string): FetchJson {
   };
 }
 
-// ---- Conversão para o contrato da nossa API ----
-
 const LIVE = new Set(["IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT", "LIVE"]);
 const FINISHED = new Set(["FINISHED", "AWARDED"]);
 const SCHEDULED = new Set(["SCHEDULED", "TIMED"]);
 
-/** POSTPONED, SUSPENDED e CANCELLED viram null (ficam fora das listas). */
 export function mapStatus(status: string): MatchStatus | null {
   if (LIVE.has(status)) return "live";
   if (FINISHED.has(status)) return "finished";
@@ -144,11 +134,6 @@ export function mapStatus(status: string): MatchStatus | null {
   return null;
 }
 
-/**
- * Ajustes de nomes e siglas, por id: a football-data.org chama o Atlético-MG
- * de "Mineiro", usa "FBP" para o Grêmio e "COR" para Corinthians E Coritiba.
- * O nome completo do Athletico ainda é o antigo ("CA Paranaense", até 2018).
- */
 const teamOverrides: Record<number, { name?: string; tla?: string; fullName?: string }> = {
   1766: { name: "Atlético-MG", fullName: "Clube Atlético Mineiro" },
   1768: { name: "Athletico-PR", fullName: "Club Athletico Paranaense" },
@@ -194,7 +179,6 @@ export function mapPosition(position: string | null): PlayerPosition | null {
   const value = position?.toLowerCase() ?? "";
   if (!value) return null;
   if (value.includes("goalkeeper")) return "Goleiro";
-  // "Attacking Midfield" precisa cair em meio-campo, por isso vem antes.
   if (value.includes("midfield")) return "Meio-campo";
   if (value.includes("back") || value.includes("defen")) return "Defensor";
   if (/forward|winger|offence|striker|attack/.test(value)) return "Atacante";
@@ -249,7 +233,6 @@ function toPlayer(person: FdPerson, teamId: string, now: number): Player {
     position: mapPosition(person.position),
     nationality: person.nationality ? translateCountry(person.nationality) : "",
     age: ageOn(person.dateOfBirth, now),
-    // O plano gratuito não traz estatísticas por jogador.
     goals: null,
     assists: null,
     yellowCards: null,
@@ -266,7 +249,6 @@ function sortSquad(squad: Player[]) {
   );
 }
 
-/** Últimos 5 resultados do time (a API gratuita devolve `form: null`). */
 export function computeForm(matches: Match[], teamId: string): FormResult[] {
   return matches
     .filter(
@@ -286,7 +268,6 @@ export function computeForm(matches: Match[], teamId: string): FormResult[] {
     });
 }
 
-/** Rodada anterior, atual e próxima; mais jogos ao vivo e jogos remarcados dos próximos dias. */
 export function isFeatured(match: Match, currentRound: number, now: number) {
   if (match.status === "live") return true;
   if (Math.abs(match.round - currentRound) <= 1) return true;
@@ -297,11 +278,8 @@ export function isFeatured(match: Match, currentRound: number, now: number) {
 interface FootballDataOptions {
   fetchJson: FetchJson;
   now?: () => number;
-  /** Ligas servidas (padrão: todas de data/competitions.ts). */
   competitions?: readonly string[];
-  /** API-Football: elenco com fotos e técnicos. Opcional; sem ela, usa o elenco da football-data.org. */
   enrichment?: TeamEnrichment;
-  /** Avisado quando os detalhes de partida (API-Football) falham; a página segue com o básico. */
   onDetailsError?: (error: unknown, matchId: string) => void;
 }
 
@@ -342,7 +320,6 @@ export function createFootballDataSource({
         fetchJson<FdStandingsResponse>(`${path(code)}/standings`),
         loadSeason(code),
       ]);
-      // Ligas: REGULAR_SEASON/TOTAL. Champions: LEAGUE_STAGE/TOTAL (tabela única de 36).
       const table = data.standings.find((s) => s.type === "TOTAL") ?? data.standings[0];
       return (table?.table ?? [])
         .map((row) => {
@@ -384,11 +361,9 @@ export function createFootballDataSource({
       );
     });
 
-  /** "404" e "400" (id inválido) da football-data.org significam "não existe", não "fora do ar". */
   const isNotFound = (error: unknown) => / 40[04]\b/.test(String(error));
-  const isNumericId = (id: string) => /^\d+$/.test(id); // ids da football-data.org são numéricos
+  const isNumericId = (id: string) => /^\d+$/.test(id);
 
-  /** Procura o time nas ligas já carregadas; se não achar, busca o time avulso (1 requisição). */
   async function findTeam(id: string): Promise<{ team: FdTeam; competition: string | null } | null> {
     if (!isNumericId(id)) return null;
     for (const code of competitions) {
@@ -397,7 +372,6 @@ export function createFootballDataSource({
     }
     try {
       const team = await cache.get(`team:${id}`, TTL.teams, () => fetchJson<FdTeam>(`/teams/${id}`));
-      // A liga do time: a primeira competição dele que o site oferece (de preferência liga, não copa).
       const running = team.runningCompetitions ?? [];
       const league =
         running.find((c) => c.type === "LEAGUE" && competitions.includes(c.code)) ??
@@ -409,10 +383,6 @@ export function createFootballDataSource({
     }
   }
 
-  /**
-   * Técnico: correção manual > football-data.org > API-Football. A foto vem da
-   * API-Football só quando o nome bate (nunca mostra a foto de outra pessoa).
-   */
   function resolveCoach(
     teamId: string,
     fdName: string | null,
@@ -450,12 +420,10 @@ export function createFootballDataSource({
     },
 
     findMatch: async (id) => {
-      // Primeiro nas ligas já carregadas (sem gastar requisição)...
       for (const code of competitions) {
         const found = cache.peek<{ byId: Map<string, Match> }>(`${code}:season`)?.byId.get(id);
         if (found) return found;
       }
-      // ...senão, a partida avulsa (ex.: palpite numa liga que ninguém abriu ainda).
       if (!isNumericId(id)) return null;
       try {
         const match = await cache.get(`match:${id}`, TTL.match, () => fetchJson<FdMatch>(`/matches/${id}`));
@@ -482,11 +450,11 @@ export function createFootballDataSource({
       };
       if (!enrichment) return details;
       if (match.status === "scheduled" && Date.parse(match.kickoff) - now() > LINEUPS_WINDOW) {
-        return details; // ainda sem escalação: nada a buscar
+        return details;
       }
 
-      // Detalhes são complemento: se a API-Football falhar (limite, fora do ar),
-      // a página sai com o básico da football-data.org em vez de dar erro.
+      // Estatísticas, escalações e eventos vêm da API-Football. Se ela falhar
+      // (ex.: limite diário), a página mostra só o básico em vez de dar erro.
       const extra = await enrichment.matchDetails(match).catch((error: unknown) => {
         onDetailsError?.(error, id);
         return undefined;
@@ -494,7 +462,6 @@ export function createFootballDataSource({
       if (extra === undefined || extra === null) return { ...details, detailed: false };
 
       const { status, homeScore, awayScore, minute, ...rest } = extra;
-      // Placar e minuto da mesma fonte dos eventos (senão "2 x 1" com 3 gols na lista).
       const fresh = status !== null && status !== "scheduled";
       return {
         ...details,
@@ -520,8 +487,6 @@ export function createFootballDataSource({
       const { team, competition } = found;
       const standings = competition ? await loadStandings(competition).catch(() => []) : [];
 
-      // Complemento da API-Football (só times ligados em data/team-links.ts, hoje o Brasileirão);
-      // se ela falhar, a página sai com o elenco da football-data.org.
       const [extraSquad, coaches] = enrichment
         ? await Promise.allSettled([enrichment.squad(id), enrichment.coaches(id)])
         : [];

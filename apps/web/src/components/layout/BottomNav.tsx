@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 import { cn } from "../../lib/cn";
 import { navLinks } from "./navLinks";
 
-/** Barra de abas inferior do mobile (some a partir de `lg`, onde o Header mostra os links). */
 export default function BottomNav() {
   return (
     <nav
@@ -24,7 +23,6 @@ export default function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  {/* Ativo: pílula atrás do ícone, além da cor. */}
                   <span
                     className={cn(
                       "flex h-7 w-12 items-center justify-center rounded-full transition-colors",

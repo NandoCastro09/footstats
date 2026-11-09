@@ -7,12 +7,6 @@ function tokens(name: string) {
     .filter(Boolean);
 }
 
-/**
- * Compara nomes de pessoas escritos de jeitos diferentes por fontes diferentes:
- * "E. Domínguez" = "Eduardo Dominguez", "Ceni Rogerio" = "Rogério Ceni",
- * "Marcao" = "Marcão". Cada parte do nome mais curto precisa aparecer no mais
- * longo (iniciais valem pela primeira letra), e pelo menos uma parte inteira.
- */
 export function samePerson(a: string, b: string) {
   const ta = tokens(a);
   const tb = tokens(b);

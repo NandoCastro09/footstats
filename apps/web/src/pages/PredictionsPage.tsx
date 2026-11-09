@@ -64,7 +64,6 @@ export default function PredictionsPage() {
           <h2 id="form-title" className="mb-3 font-display text-3xl font-extrabold uppercase text-ink">
             {editing ? "Editar palpite" : "Novo palpite"}
           </h2>
-          {/* key: ao trocar entre criar/editar, o formulário reinicia com os valores certos. */}
           <PredictionForm
             key={editing?.id ?? `novo-${league}`}
             editing={editing}

@@ -23,12 +23,10 @@ import { ApiError } from "../../services/api";
 import type { Match, Prediction } from "../../types";
 
 interface PredictionFormProps {
-  /** Palpite em edição (PUT) ou null para criar um novo (POST). */
   editing: Prediction | null;
   onDone: () => void;
 }
 
-// Campos numéricos começam vazios; o zod acusa "Informe os gols" no envio.
 const emptyValues = {
   name: "",
   email: "",
@@ -77,10 +75,9 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
   } = useForm<PredictionFormValues>({
     resolver: zodResolver(predictionSchema),
     defaultValues: editing ? toFormValues(editing) : emptyValues,
-    mode: "onTouched", // valida ao sair do campo; depois, a cada tecla
+    mode: "onTouched",
   });
 
-  // Ao abrir em modo edição, leva o foco para o primeiro campo.
   useEffect(() => {
     if (editing) setFocus("name");
   }, [editing, setFocus]);
@@ -89,7 +86,6 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
   const selectedMatchId = useWatch({ control, name: "matchId" });
   const commentLength = useWatch({ control, name: "comment" })?.length ?? 0;
 
-  // Partidas disponíveis: só as agendadas (+ a do palpite em edição, se não estiver na lista).
   const options = matchesQuery.data ?? [];
   const matchOptions =
     editing && !options.some((match) => match.id === editing.matchId)
@@ -99,7 +95,6 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
   const homeGoals = useWatch({ control, name: "homeGoals" });
   const awayGoals = useWatch({ control, name: "awayGoals" });
 
-  // Veio do botão "Palpitar" (?partida=ID): seleciona a partida quando a lista chegar.
   const presetAvailable = Boolean(presetMatchId && options.some((match) => match.id === presetMatchId));
   useEffect(() => {
     if (!editing && presetMatchId && presetAvailable && !getValues("matchId")) {
@@ -107,7 +102,7 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
     }
   }, [editing, presetMatchId, presetAvailable, getValues, setValue]);
 
-  /** Botões −/+ do placar (o campo continua aceitando digitação). */
+  // Botões − e + do placar (o campo continua aceitando digitação). Limite: 0 a 20.
   function stepGoals(name: "homeGoals" | "awayGoals", delta: number) {
     const current = getValues(name);
     const base = Number.isFinite(current) ? current : delta > 0 ? 0 : 1;
@@ -126,7 +121,8 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
         ? `vitória do ${awayName}`
         : "empate";
 
-  /** Liga os erros 400/409 do backend aos campos do formulário. */
+  // Quando a API recusa o palpite (400 ou 409), o erro de cada campo vem em "details"
+  // e é mostrado embaixo do campo certo, como os erros de validação do próprio formulário.
   function handleServerError(error: unknown) {
     const message =
       error instanceof ApiError ? error.message : "Erro inesperado ao salvar o palpite.";
@@ -168,7 +164,7 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      noValidate // usamos nossas próprias mensagens, não os balões do navegador
+      noValidate
       aria-labelledby="form-title"
       aria-busy={pending}
       className="space-y-3"
@@ -325,7 +321,6 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
             );
           })}
         </div>
-        {/* Anuncia o placar a cada mudança (inclusive pelos botões −/+). */}
         <p aria-live="polite" className="mt-1 min-h-6 text-center font-semibold text-lime">
           {bothSet && (
             <>

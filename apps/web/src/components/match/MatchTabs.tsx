@@ -11,16 +11,10 @@ interface MatchTabsProps<T extends string> {
   tabs: TabItem<T>[];
   active: T;
   onChange: (id: T) => void;
-  /** Prefixo dos ids (liga cada aba ao seu painel). */
   idPrefix: string;
   label: string;
 }
 
-/**
- * Abas no padrão ARIA (role="tablist"): setas trocam de aba, Home/End vão
- * para a primeira/última e só a aba ativa entra no Tab do teclado.
- * Visual do protótipo: segmento claro sobre o degradê azul.
- */
 export default function MatchTabs<T extends string>({
   tabs,
   active,

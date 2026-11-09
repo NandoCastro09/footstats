@@ -19,7 +19,6 @@ const positionLabel: Record<LineupPosition, string> = {
   F: "Atacante",
 };
 
-/** "Giorgian de Arrascaeta" → "Arrascaeta" (nome curto embaixo da bolinha). */
 function shortName(name: string) {
   const parts = name.replace(/\./g, ". ").trim().split(/\s+/);
   return parts[parts.length - 1];
@@ -30,7 +29,8 @@ function parseGrid(grid: string | null) {
   return Number.isFinite(row) && Number.isFinite(col) ? { row, col } : null;
 }
 
-/** Posição no campo (em %) a partir da grade "linha:coluna". Mandante ataca para a direita. */
+// Converte a grade "linha:coluna" da escalação em posição (%) no campinho.
+// O mandante ataca para a direita e o visitante para a esquerda.
 function placeTeam(lineup: TeamLineup, side: Side) {
   const placed = lineup.startXI.flatMap((player) => {
     const grid = parseGrid(player.grid);
@@ -42,7 +42,7 @@ function placeTeam(lineup: TeamLineup, side: Side) {
     perRow.set(p.row, Math.max(perRow.get(p.row) ?? 0, p.col));
 
   return placed.map(({ player, row, col }) => {
-    const depth = rows > 1 ? (row - 1) / (rows - 1) : 0; // 0 = goleiro, 1 = ataque
+    const depth = rows > 1 ? (row - 1) / (rows - 1) : 0;
     const across = col / ((perRow.get(row) ?? 1) + 1);
     return {
       player,
@@ -68,11 +68,9 @@ function Pitch({
     })),
   ];
   const line = "border-[rgba(155,208,92,0.2)]";
-  // Jogador tocado (celular não tem hover): mostra o nome completo dele.
   const [active, setActive] = useState<string | null>(null);
 
   return (
-    // Só visual: as listas abaixo trazem as mesmas informações em texto.
     <div
       aria-hidden="true"
       onClick={() => setActive(null)}
@@ -117,8 +115,6 @@ function Pitch({
             )}
             style={{ left: `${left}%`, top: `${y}%` }}
           >
-            {/* Balão com o nome completo ("Jorge" → "Kaio Jorge"). Perto das
-                bordas ele se alinha para dentro, para não ser cortado. */}
             <span
               className={cn(
                 "pointer-events-none absolute whitespace-nowrap rounded-md bg-surface-deep/95 px-2 py-1 text-xs font-semibold text-ink shadow-lg ring-1 ring-line transition-opacity",
@@ -256,7 +252,6 @@ function TeamList({
   lineup: TeamLineup;
   side: Side;
   events: MatchEvent[];
-  /** Reservas abertas/fechadas juntas nos dois times. */
   benchOpen: boolean;
   onBenchToggle: (open: boolean) => void;
 }) {
@@ -265,7 +260,6 @@ function TeamList({
   );
   const outOf = (p: LineupPlayer) => subs.find((e) => e.player === p.name);
   const inOf = (p: LineupPlayer) => subs.find((e) => e.related === p.name);
-  // Quem entrou aparece primeiro no banco.
   const bench = [...lineup.substitutes].sort(
     (a, b) => Number(Boolean(inOf(b))) - Number(Boolean(inOf(a)))
   );
@@ -326,7 +320,6 @@ function TeamList({
   );
 }
 
-/** Aba "Escalação": campo com os titulares + listas com notas, cartões e substituições. */
 export default function MatchLineups({
   lineups,
   match,
@@ -336,7 +329,6 @@ export default function MatchLineups({
   match: Match;
   events: MatchEvent[];
 }) {
-  // Clicar em "Reservas" de um time abre (ou fecha) as dos dois.
   const [benchOpen, setBenchOpen] = useState(false);
 
   return (

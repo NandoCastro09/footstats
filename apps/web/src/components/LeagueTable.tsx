@@ -47,7 +47,6 @@ function sortValue(row: Standing, key: SortKey) {
 interface LeagueTableProps {
   standings: Standing[];
   caption?: string;
-  /** Código da liga, para as cores das zonas (Libertadores, Z4...). */
   competition?: string;
 }
 
@@ -70,7 +69,6 @@ export default function LeagueTable({
         typeof va === "string" && typeof vb === "string"
           ? va.localeCompare(vb, "pt-BR")
           : Number(va) - Number(vb);
-      // Desempate sempre pela posição na tabela.
       return result !== 0 ? result : a.position - b.position;
     });
     return sort.direction === "asc" ? sorted : sorted.reverse();
@@ -80,12 +78,10 @@ export default function LeagueTable({
     setSort((current) =>
       current.key === key
         ? { key, direction: current.direction === "asc" ? "desc" : "asc" }
-        : // Posição e nome começam crescentes; números, do maior para o menor.
-          { key, direction: key === "position" || key === "team" ? "asc" : "desc" }
+        : { key, direction: key === "position" || key === "team" ? "asc" : "desc" }
     );
   }
 
-  // As divisórias das zonas só fazem sentido na ordem da tabela.
   const naturalOrder = sort.key === "position" && sort.direction === "asc";
   const sortedLabel = columns.find((c) => c.key === sort.key)?.label ?? "";
   const sortDescription = `Ordenado por ${sortedLabel.toLowerCase()} (${
@@ -94,8 +90,6 @@ export default function LeagueTable({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-      {/* Cabeçalho visual fora da área com scroll, para não ser cortado no mobile.
-          O <caption> (sr-only) é o que os leitores de tela usam. */}
       <div aria-hidden="true" className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line px-5 py-4">
         <p className="font-display text-2xl font-bold uppercase text-ink">{caption}</p>
         <p className="text-sm text-muted">
@@ -103,10 +97,8 @@ export default function LeagueTable({
           <span className="md:hidden">Deslize a tabela para o lado.</span>
         </p>
       </div>
-      {/* relative: os textos sr-only (position: absolute) das células precisam ficar
-          presos aqui. Sem isso eles "escapam" da rolagem, a página passa a ter ~800px
-          e o iPhone reduz o zoom da tela inteira. */}
       <div
+        // relative: sem ele os textos sr-only escapam da rolagem e o iPhone reduz o zoom da página
         className="relative overflow-x-auto"
         role="region"
         aria-label={`${caption} (role para os lados para ver todas as colunas)`}
@@ -195,8 +187,7 @@ export default function LeagueTable({
                   >
                     <Link
                       to={`/times/${row.team.id}`}
-                      // min-w-max: sem ele, o Firefox calcula a coluna estreita demais
-                      // e o nome do time invade a coluna de pontos.
+                      // min-w-max: no Firefox o nome do time invadia a coluna de pontos
                       className="inline-flex min-h-touch min-w-max items-center gap-3 rounded-control text-[15px] font-semibold text-ink hover:text-lime hover:underline"
                     >
                       <TeamCrest team={row.team} size="sm" />
@@ -234,7 +225,6 @@ export default function LeagueTable({
         </table>
       </div>
 
-      {/* Legenda das zonas */}
       <ul className="flex flex-wrap gap-x-6 gap-y-2 border-t border-line px-5 py-4 text-[13px] text-ink-2">
         {zones.map((zone) => (
           <li key={zone.label} className="flex items-center gap-2">

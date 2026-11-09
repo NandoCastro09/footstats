@@ -10,7 +10,6 @@ import { formatShortDate, formatTime } from "../../lib/format";
 import { teamTheme } from "../../lib/teamColors";
 import type { Coach, Team } from "../../types";
 
-/** Classes de texto/caixas internas conforme a faixa seja escura ou clara. */
 function tone(dark: boolean, hasColor: boolean) {
   if (!hasColor) {
     return { text: "text-ink", soft: "text-ink-2", box: "border-line bg-bg", decor: "text-lime" };
@@ -34,7 +33,6 @@ function CoachBox({ coach, className, labelClass, softClass }: { coach: Coach; c
   );
 }
 
-/** Próximo jogo do time (da lista de partidas da liga, já usada em outras telas). */
 function NextMatchBox({ teamId, competition }: { teamId: string; competition: string }) {
   const { data: matches, isPending } = useMatches({ competition });
   if (isPending) return <Skeleton className="h-[88px] w-full rounded-2xl" />;
@@ -73,11 +71,9 @@ function NextMatchBox({ teamId, competition }: { teamId: string; competition: st
 
 interface TeamHeaderProps {
   team: Team;
-  /** "Brasileirão Série A 2026" */
   competitionLabel?: string;
 }
 
-/** Faixa do time na cor do clube (sólida, sem gradiente). */
 export default function TeamHeader({ team, competitionLabel }: TeamHeaderProps) {
   const theme = teamTheme(team.id);
   const t = tone(theme.dark, theme.background !== null);
@@ -96,7 +92,6 @@ export default function TeamHeader({ team, competitionLabel }: TeamHeaderProps) 
       )}
       style={theme.background ? { backgroundColor: theme.background } : undefined}
     >
-      {/* Decoração: círculo central e linha do meio de campo, cortados no canto. */}
       <svg
         aria-hidden="true"
         viewBox="0 0 200 200"

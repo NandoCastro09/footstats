@@ -21,7 +21,6 @@ beforeAll(async () => {
 afterAll(() => app.close());
 beforeEach(() => app.predictions.reset());
 
-/** Uma partida agendada que ainda não tem palpite inicial. */
 async function freeScheduledMatchId() {
   const seeds: Prediction[] = (await app.inject({ url: "/api/predictions" })).json().data;
   const taken = new Set(seeds.map((p) => p.matchId));

@@ -6,9 +6,6 @@ import { teams, teamsById, toSummary } from "../data/teams.js";
 import { DEFAULT_COMPETITION, listCompetitionInfo } from "../data/competitions.js";
 import type { DataSource } from "./types.js";
 
-// Fonte mock: temporada simulada em memória (apps/api/src/data). Só o Brasileirão;
-// o parâmetro de liga das funções é ignorado (as rotas já validam a liga).
-
 const FORM_LENGTH = 5;
 
 function toMatch(record: MatchRecord): Match {
@@ -29,7 +26,6 @@ function toMatch(record: MatchRecord): Match {
   };
 }
 
-/** Classificação calculada a partir das partidas encerradas da temporada. */
 function computeStandings(): Standing[] {
   const finished = season
     .filter((match) => match.status === "finished")
@@ -72,7 +68,6 @@ function computeStandings(): Standing[] {
     };
   });
 
-  // Critérios de desempate do Brasileirão: pontos, vitórias, saldo, gols pró.
   rows.sort(
     (a, b) =>
       b.points - a.points ||
@@ -86,10 +81,8 @@ function computeStandings(): Standing[] {
 }
 
 export function createMockSource(): DataSource {
-  // Os dados mock não mudam enquanto a API está no ar: calcula uma vez.
   const visibleMatches = season.filter((m) => VISIBLE_ROUNDS.includes(m.round)).map(toMatch);
   const standings = computeStandings();
-  // Artilharia derivada dos elencos fictícios.
   const scorers: Scorer[] = teams
     .flatMap((team) =>
       (squadsByTeam.get(team.id) ?? [])

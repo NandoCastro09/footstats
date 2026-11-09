@@ -13,10 +13,6 @@ import { squadsByTeam } from "./players.js";
 import { teamsById } from "./teams.js";
 import type { MatchRecord } from "./season.js";
 
-// Detalhes fictícios de partida (modo mock), determinísticos por id e coerentes
-// com o placar: os gols da lista somam o placar, quem saiu não marca depois,
-// cartões dos eventos batem com as estatísticas.
-
 type Side = "home" | "away";
 
 const formations = ["4-3-3", "4-4-2", "4-2-3-1", "3-5-2"];
@@ -58,7 +54,6 @@ function toLineupPlayer(player: Player, grid: string | null): LineupPlayer {
   };
 }
 
-/** Titulares conforme o esquema (linha 1 = goleiro) e o resto no banco. */
 function buildLineup(teamId: string, random: Random): TeamLineup {
   const squad = squadsByTeam.get(teamId) ?? [];
   const formation = pick(random, formations);
@@ -120,7 +115,6 @@ export function buildMockDetails(
     record.status === "finished" ? 90 : Math.max(1, record.minute ?? 1);
   const events: MatchEvent[] = [];
 
-  // Substituições primeiro: definem quem está em campo em cada minuto.
   const entered = new Map<string, number>(); // id → minuto em que entrou
   const left = new Map<string, number>(); // id → minuto em que saiu
   if (end > 55) {
@@ -175,7 +169,6 @@ export function buildMockDetails(
     return players[players.length - 1];
   }
 
-  // Cartões, em ordem cronológica (o segundo amarelo precisa vir depois do primeiro).
   const cardMinutes = Array.from(
     { length: Math.round(randomInt(random, 2, 6) * (end / 90)) },
     () => randomInt(random, 5, end)
@@ -187,7 +180,6 @@ export function buildMockDetails(
       onPitch(side, minute).filter((p) => p.position !== "G")
     );
     if (!player) continue;
-    // Segundo amarelo vira vermelho; quem ainda vai ser substituído não é expulso antes.
     const red =
       !left.has(player.id) && (player.yellowCards > 0 || random() < 0.06);
     if (!red && player.yellowCards > 0) continue;
@@ -207,7 +199,6 @@ export function buildMockDetails(
     });
   }
 
-  // Gols: o placar manda.
   const scores: Record<Side, number> = {
     home: record.homeScore ?? 0,
     away: record.awayScore ?? 0,
@@ -244,7 +235,6 @@ export function buildMockDetails(
     }
   }
 
-  // Notas: base + gols/assistências − cartões; reserva que não entrou fica sem nota.
   const winner: Side | null =
     scores.home > scores.away
       ? "home"
@@ -277,7 +267,6 @@ export function buildMockDetails(
         (e.type === "goal" || e.type === "penalty")
     ).length;
 
-  // Estatísticas proporcionais ao tempo jogado.
   const fraction = end / 90;
   const possession = randomInt(random, 38, 62);
   const sideStats = (side: Side, share: number) => {

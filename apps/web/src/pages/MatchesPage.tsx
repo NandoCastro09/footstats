@@ -32,17 +32,14 @@ const groups: Array<{ status: MatchStatus; title: string; icon?: ReactNode }> = 
   { status: "finished", title: "Resultados recentes" },
 ];
 
-/** Partidas mostradas por seção antes do botão "Mostrar mais". */
 const PAGE = 8;
 
 function parseStatus(value: string | null): StatusFilter {
   return value === "live" || value === "scheduled" || value === "finished" ? value : "all";
 }
 
-/**
- * Rodada "atual": a mais comum entre as partidas agendadas (uma partida adiada
- * de rodada antiga não puxa o número para trás). Sem agendadas, a última jogada.
- */
+// Rodada atual = a que mais aparece entre os jogos que faltam (um jogo adiado
+// de rodada antiga não muda o número).
 function currentRoundOf(matches: Match[]) {
   const scheduled = matches.filter((match) => match.status !== "finished");
   if (scheduled.length > 0) {
@@ -53,7 +50,6 @@ function currentRoundOf(matches: Match[]) {
   return matches.length > 0 ? Math.max(...matches.map((match) => match.round)) : undefined;
 }
 
-/** Agrupa por dia (fuso de Brasília), mantendo a ordem que a API devolveu. */
 function groupByDay(matches: Match[]) {
   const days = new Map<string, Match[]>();
   for (const match of matches) {
@@ -131,7 +127,6 @@ export default function MatchesPage() {
   usePageTitle("Partidas");
   const searchId = useId();
 
-  // Filtros ficam na URL (?status=live&q=gremio): dá para compartilhar o link.
   const [params, setParams] = useSearchParams();
   const status = parseStatus(params.get("status"));
   const search = params.get("q") ?? "";
@@ -144,8 +139,6 @@ export default function MatchesPage() {
       status: status === "all" ? undefined : status,
       search: debouncedSearch || undefined,
     });
-  // Lista completa da liga (mesma consulta da página sem filtros, já em cache):
-  // alimenta os números do topo, o jogo em destaque e os contadores dos filtros.
   const { data: allMatches, isPlaceholderData: allFromOtherLeague } = useMatches({ competition });
 
   const summary = useMemo(() => {
@@ -178,10 +171,8 @@ export default function MatchesPage() {
 
   const hasFilters = status !== "all" || search !== "";
   const clearFilters = () => setParams({}, { replace: true });
-  // Ao trocar de liga, a consulta mostra os dados da liga anterior até chegar a
-  // nova (placeholderData): nesse meio-tempo o topo fica em skeleton.
+  // Ao trocar de liga, o React Query mostra a liga anterior até a nova chegar: nesse meio-tempo, skeleton.
   const ready = allMatches !== undefined && !allFromOtherLeague;
-  // Qualquer request da lista (liga, busca, filtro) mostra o skeleton das linhas.
   const listLoading = isPending || isPlaceholderData;
 
   return (
@@ -280,7 +271,6 @@ export default function MatchesPage() {
         />
       </form>
 
-      {/* Anuncia o resultado do filtro para leitores de tela. */}
       <p aria-live="polite" className="-mt-4 flex min-h-6 items-center gap-2 text-sm text-muted">
         {isFetching && !isPending ? (
           <>
@@ -318,14 +308,12 @@ export default function MatchesPage() {
           }
         />
       ) : (
-        // Agrupa por status (a API já devolve na ordem: ao vivo, próximas, encerradas).
         <div className="space-y-14">
           {groups.map((group) => {
             const items = matches.filter((match) => match.status === group.status);
             if (items.length === 0) return null;
             return (
               <MatchSection
-                // key com filtros: ao mudar a busca, volta a mostrar só a primeira página.
                 key={`${group.status}-${debouncedSearch}-${competition}`}
                 status={group.status}
                 title={group.title}

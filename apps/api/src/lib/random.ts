@@ -1,6 +1,3 @@
-// Gerador pseudoaleatório com semente (mulberry32): os dados mock são
-// "aleatórios", mas idênticos a cada vez que a API sobe.
-
 export type Random = () => number;
 
 export function createRandom(seed: number): Random {
@@ -21,7 +18,6 @@ export function pick<T>(random: Random, items: readonly T[]): T {
   return items[Math.floor(random() * items.length)];
 }
 
-/** Amostra de uma distribuição de Poisson (gols por partida). */
 export function poisson(random: Random, lambda: number) {
   const limit = Math.exp(-lambda);
   let k = 0;

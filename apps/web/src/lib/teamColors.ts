@@ -1,9 +1,4 @@
-/**
- * Cor principal dos clubes (a API não informa). Chave: id da football-data.org.
- * Times fora da lista usam a superfície padrão. Revisado em 09/11/2026.
- */
 export const teamColors: Record<string, string> = {
-  // Brasileirão
   "1765": "#7A0F2E", // Fluminense (grená)
   "1766": "#161616", // Atlético-MG
   "1767": "#0A6FA8", // Grêmio
@@ -24,7 +19,6 @@ export const teamColors: Record<string, string> = {
   "4364": "#F6D500", // Mirassol
   "6684": "#D9030E", // Internacional
   "6685": "#161616", // Santos
-  // Europa
   "57": "#EF0107", // Arsenal
   "61": "#034694", // Chelsea
   "64": "#C8102E", // Liverpool
@@ -64,13 +58,11 @@ function contrast(a: string, b: string) {
 }
 
 export interface TeamTheme {
-  /** Cor de fundo da faixa (null = usar a superfície padrão). */
   background: string | null;
-  /** Texto escuro sobre cores claras (amarelo, azul-celeste, branco). */
   dark: boolean;
 }
 
-/** Cor da faixa do time e se o texto deve ser escuro (contraste ≥ 4.5:1). */
+// Escolhe texto branco ou escuro na faixa do time conforme o contraste (WCAG pede 4.5:1).
 export function teamTheme(teamId: string): TeamTheme {
   const background = teamColors[teamId] ?? null;
   if (!background) return { background: null, dark: false };

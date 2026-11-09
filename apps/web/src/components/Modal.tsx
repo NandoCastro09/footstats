@@ -42,7 +42,6 @@ export default function Modal({
   const titleId = useId();
   const bodyId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-  // Guarda o onClose mais recente sem reexecutar o efeito a cada render.
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -56,7 +55,6 @@ export default function Modal({
     const focusables = () =>
       Array.from(dialog?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
 
-    // Foco inicial no "Cancelar": mais seguro em ações destrutivas.
     const initial =
       dialog?.querySelector<HTMLElement>("[data-autofocus]") ?? focusables()[0];
     (initial ?? dialog)?.focus();

@@ -1,8 +1,5 @@
 import type { TeamSummary } from "../types.js";
 
-// Times da liga mock. Nomes, cidades, estádios e fundação são reais;
-// técnicos, elencos e resultados são fictícios.
-
 export interface TeamRecord {
   id: string;
   name: string;
@@ -11,7 +8,7 @@ export interface TeamRecord {
   stadium: string;
   founded: number;
   coach: string;
-  strength: number; // força relativa usada na simulação (≈ 0.7 a 1.35)
+  strength: number;
 }
 
 export const teams: TeamRecord[] = [

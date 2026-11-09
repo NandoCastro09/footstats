@@ -1,19 +1,12 @@
 import { cn } from "../lib/cn";
 
 interface LogoProps {
-  /** Lado do ícone em px (padrão 34). */
   size?: number;
-  /** "inverted": fundo escuro e desenho em lime (para fundos claros). */
   variant?: "default" | "inverted";
-  /** Mostra o texto "FOOTSTATS" ao lado (é ele que dá o nome acessível). */
   withWordmark?: boolean;
   className?: string;
 }
 
-/**
- * Marca FootStats: 3 barras subindo + a bola no topo. SVG inline (sem request
- * extra) e decorativo: o nome acessível vem do texto ao lado ou do link que o envolve.
- */
 export default function Logo({ size = 34, variant = "default", withWordmark = true, className }: LogoProps) {
   const bg = variant === "default" ? "#C8F135" : "#0A0D0B";
   const fg = variant === "default" ? "#0A0D0B" : "#C8F135";

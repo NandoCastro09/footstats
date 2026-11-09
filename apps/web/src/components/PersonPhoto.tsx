@@ -4,9 +4,7 @@ import { cn } from "../lib/cn";
 interface PersonPhotoProps {
   name: string;
   photo: string | null;
-  /** Texto do círculo quando não há foto (número da camisa ou iniciais). */
   fallback?: string;
-  /** Como o leitor de tela anuncia o círculo (ex.: "Camisa 9"). */
   fallbackLabel?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
@@ -25,7 +23,6 @@ function initials(name: string) {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
 }
 
-/** Foto de jogador/técnico; se não houver (ou falhar), um círculo com número ou iniciais. */
 export default function PersonPhoto({
   name,
   photo,

@@ -1,16 +1,10 @@
 import type { Competition } from "../types.js";
 
-// Competições do plano gratuito da football-data.org com temporada em andamento.
-// (A Euro e a Copa do Mundo também são gratuitas, mas não têm jogos agora.)
-// Os emblemas vêm da CDN da API-Football (id da liga lá): são as versões atuais
-// e carregam bem mais rápido que os da football-data.org. Não gastam cota.
-
 interface CompetitionConfig {
   code: string;
   name: string;
   country: string;
   emblem: string;
-  /** "year": temporada no ano civil (Brasileirão). "split": agosto a maio (Europa). */
   calendar: "year" | "split";
 }
 
@@ -29,7 +23,6 @@ const configs: CompetitionConfig[] = [
 
 export const DEFAULT_COMPETITION = "BSA";
 
-/** "2026" (ano civil) ou "2026/27" (temporada europeia que começa em agosto). */
 export function seasonLabel(calendar: CompetitionConfig["calendar"], now = new Date()) {
   const year = now.getUTCFullYear();
   if (calendar === "year") return String(year);

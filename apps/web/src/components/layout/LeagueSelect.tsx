@@ -3,14 +3,12 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "../../lib/cn";
 import { useLeague } from "../../league/leagueContext";
 
-/** Seletor de liga do header (select nativo: teclado e leitor de tela funcionam). */
 export default function LeagueSelect({ className }: { className?: string }) {
   const { code, competition, competitions, setLeague } = useLeague();
   const id = useId();
 
   return (
     <div className={cn("flex items-center justify-end gap-3", className)}>
-      {/* Em telas estreitas o rótulo some da vista, mas continua para leitores de tela. */}
       <label
         htmlFor={id}
         className="sr-only text-xs font-semibold uppercase tracking-[0.14em] text-muted sm:not-sr-only"
@@ -18,7 +16,6 @@ export default function LeagueSelect({ className }: { className?: string }) {
         Liga
       </label>
       <div className="relative w-full min-w-0 md:w-72">
-        {/* Logo da liga atual (decorativo: o nome já está no select). */}
         {competition && (
           <span
             aria-hidden="true"

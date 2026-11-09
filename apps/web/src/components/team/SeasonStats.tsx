@@ -124,7 +124,6 @@ function GoalsCard({ standing }: { standing: Standing }) {
   );
 }
 
-/** Zona da posição (Libertadores, Z4...) — precisa do nº de times da liga. */
 function useZoneLabel(standing: Standing, competition: string | null) {
   const { data: standings } = useStandings(competition ?? "");
   if (!competition) return undefined;
@@ -148,7 +147,6 @@ function Cards({ standing, zone }: { standing: Standing; zone?: string }) {
   );
 }
 
-/** Seção "Temporada" da página do time. */
 export default function SeasonStats({ standing, competition }: { standing: Standing; competition: string | null }) {
   return (
     <section id="temporada" aria-labelledby="temporada-titulo" className="scroll-mt-24 space-y-5">

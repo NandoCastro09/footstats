@@ -26,13 +26,11 @@ function PlayerGrid({ players }: { players: Player[] }) {
   );
 }
 
-/** Seção "Elenco" da página do time: filtro por posição e grupos. */
 export default function Squad({ squad }: { squad: Player[] }) {
   const [position, setPosition] = useState<PositionFilter>("all");
   const injured = squad.filter((player) => player.injured).length;
   const count = (value: PlayerPosition) => squad.filter((player) => player.position === value).length;
   const shown = position === "all" ? squad : squad.filter((player) => player.position === position);
-  // Em "Todos": um grupo por posição (+ "Sem posição" se a fonte não informar).
   const groups = [
     ...positions.map((p) => ({ key: p.value, title: p.group, players: squad.filter((player) => player.position === p.value) })),
     { key: "none", title: "Sem posição informada", players: squad.filter((player) => player.position === null) },

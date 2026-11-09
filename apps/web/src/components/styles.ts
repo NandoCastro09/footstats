@@ -1,5 +1,3 @@
-// Classes compartilhadas entre componentes (ex.: um <Link> com cara de botão).
-
 export type ButtonVariant =
   | "primary"
   | "secondary"
@@ -13,10 +11,8 @@ export const buttonBase =
   "inline-flex min-h-touch items-center justify-center gap-2 rounded-full font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-2 disabled:text-muted";
 
 export const buttonVariants: Record<ButtonVariant, string> = {
-  // Lime com texto escuro (15:1).
   primary: "bg-lime text-ink-inverse hover:bg-primary-solid-hover",
   secondary: "border border-line-strong bg-transparent text-ink hover:border-lime",
-  // Laranja escuro para CTAs (5.8:1 com branco).
   cta: "bg-live-strong text-white hover:bg-live-dark",
   danger: "bg-danger-solid text-white hover:bg-danger-solid-hover",
   dangerGhost: "text-alert-text hover:bg-danger-light",

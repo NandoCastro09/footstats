@@ -6,11 +6,6 @@ import { createFootballDataFetch, createFootballDataSource } from "./football-da
 import { createMockSource } from "./mock.js";
 import type { DataSource } from "./types.js";
 
-/**
- * DATA_SOURCE=auto (padrão): football-data.org se houver FOOTBALL_DATA_TOKEN, senão mock.
- * DATA_SOURCE=football-data: exige o token.
- * DATA_SOURCE=mock: sempre os dados fictícios (testes, demonstração offline).
- */
 export function createDataSource(env: Env, log: Pick<FastifyBaseLogger, "warn" | "info">): DataSource {
   const mock = createMockSource();
   const token = env.FOOTBALL_DATA_TOKEN;

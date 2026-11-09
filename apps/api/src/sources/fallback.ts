@@ -3,7 +3,6 @@ import { DEFAULT_COMPETITION } from "../data/competitions.js";
 import { AppError } from "../lib/errors.js";
 import type { DataSource } from "./types.js";
 
-/** Falha da API externa numa liga sem reserva: 503 com mensagem amigável. */
 function upstreamError(error: unknown) {
   const rateLimited = /\b429\b|too many|rate ?limit/i.test(String(error));
   return new AppError(
@@ -15,12 +14,8 @@ function upstreamError(error: unknown) {
   );
 }
 
-/**
- * Usa a fonte principal (API real) e, se ela falhar (fora do ar, chave
- * inválida, limite de requisições), responde com a reserva (mock) — mas só
- * no Brasileirão, que é o que o mock tem. Nas outras ligas, devolve 503:
- * mostrar o Brasileirão fictício para quem escolheu a Premier League seria pior.
- */
+// Tenta a fonte real (football-data.org); se ela cair, responde com os dados mock
+// em vez de quebrar o site.
 export function withFallback(
   primary: DataSource,
   fallback: DataSource,
@@ -56,7 +51,6 @@ export function withFallback(
 
   return {
     info: () => ({ ...(usingFallback ? fallback : primary).info(), fallback: usingFallback }),
-    // Mesmo em modo reserva, as ligas oferecidas continuam as da fonte principal.
     listCompetitions: () => primary.listCompetitions(),
     listMatches: (code) => attempt("listMatches", (s) => s.listMatches(code), code),
     findMatch: (id) => attempt("findMatch", (s) => s.findMatch(id)),

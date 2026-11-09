@@ -1,7 +1,6 @@
 import { AlertTriangle, Database } from "lucide-react";
 import { useDataSource } from "../../hooks/useApi";
 
-/** Rodapé: crédito da fonte de dados, ou aviso quando a API está usando a reserva. */
 export default function DataSourceNote() {
   const { data: source } = useDataSource();
   if (!source) return null;

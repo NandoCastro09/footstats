@@ -1,14 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ErrorBody } from "../lib/errors.js";
 
-// Simulação de falhas e latência, para demonstrar o tratamento de erros no front.
-//
-//   ?simulateError=true   → 500       header: x-simulate-error: true
-//   ?simulateError=404    → 404       header: x-simulate-error: 404
-//   ?delay=2000           → +2 s      header: x-simulate-delay: 2000
-//
-// Os dois podem ser combinados. /health nunca é afetado.
-
 const MAX_DELAY_MS = 10_000;
 
 const errorCodes: Record<number, string> = {
@@ -44,6 +36,8 @@ export function parseDelay(value: string | undefined) {
   return Math.min(delay, MAX_DELAY_MS);
 }
 
+// "Modo demonstração": o front manda ?simulateError=500 ou ?delay=3000
+// e a API responde com erro ou atraso de propósito, para mostrar as telas de erro/carregando.
 export function registerSimulation(app: FastifyInstance) {
   app.addHook("preHandler", async (request, reply) => {
     if (request.method === "OPTIONS" || request.url.startsWith("/health")) return;

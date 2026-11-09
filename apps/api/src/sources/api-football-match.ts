@@ -9,9 +9,6 @@ import type {
 } from "../types.js";
 import { normalize } from "../lib/text.js";
 
-// Detalhes de partida da API-Football (/fixtures?id=X traz tudo numa requisição:
-// eventos, escalações, estatísticas e notas). Funções puras: testadas sem rede.
-
 interface AfTeamRef {
   id: number;
   name: string;
@@ -72,20 +69,13 @@ export interface AfFixture {
   players?: Array<{ team: { id: number }; players: AfPlayerStats[] }> | null;
 }
 
-// ---- Encontrar a partida ----
-
-/** "Atlético-MG" e "Atletico Mineiro" → comparação sem acento/pontuação. */
 function sameTeamName(a: string, b: string) {
   const x = normalize(a).replace(/[^a-z0-9]/g, "");
   const y = normalize(b).replace(/[^a-z0-9]/g, "");
   return x.length > 2 && y.length > 2 && (x.includes(y) || y.includes(x));
 }
 
-/**
- * Acha, entre as partidas do dia na API-Football, a mesma partida da
- * football-data.org: pelo id ligado em data/team-links.ts e, sem ligação,
- * pelo nome dos dois times.
- */
+// Procura a partida primeiro pelo id do time (data/team-links.ts) e, se não tiver, pelo nome.
 export function findFixture(
   fixtures: AfFixtureSummary[],
   home: { afId?: number; name: string },
@@ -107,8 +97,6 @@ export function findFixture(
   );
 }
 
-// ---- Status ----
-
 const LIVE = new Set(["1H", "HT", "2H", "ET", "BT", "P", "LIVE", "INT"]);
 const FINISHED = new Set(["FT", "AET", "PEN", "AWD", "WO"]);
 
@@ -116,7 +104,7 @@ export function afStatus(short: string): MatchStatus | null {
   if (LIVE.has(short)) return "live";
   if (FINISHED.has(short)) return "finished";
   if (short === "NS" || short === "TBD") return "scheduled";
-  return null; // adiado, suspenso, cancelado
+  return null;
 }
 
 const phases: Record<string, string> = {
@@ -132,9 +120,6 @@ const phases: Record<string, string> = {
   PEN: "Encerrado nos pênaltis",
 };
 
-// ---- Estatísticas ----
-
-/** Ordem e rótulos exibidos; o que a fonte não trouxer fica de fora. */
 const statDefinitions: Array<{
   key: string;
   label: string;
@@ -210,7 +195,6 @@ const statDefinitions: Array<{
   },
 ];
 
-/** "56%" → 56, "1.81" → 1.81, null → null. */
 function parseStat(value: number | string | null | undefined): number | null {
   if (value === null || value === undefined) return null;
   const number =
@@ -231,7 +215,6 @@ function toStatistics(fixture: AfFixture): MatchStat[] {
   const away = byTeam.get(fixture.teams.away.id);
   if (!home || !away) return [];
 
-  // A API às vezes não traz "Passes %": calcula a partir de certos/total.
   for (const stats of [home, away]) {
     if (!stats.has("Passes %")) {
       const accurate = parseStat(stats.get("Passes accurate"));
@@ -248,7 +231,6 @@ function toStatistics(fixture: AfFixture): MatchStat[] {
     if (!source) return [];
     let homeValue = parseStat(home.get(source));
     let awayValue = parseStat(away.get(source));
-    // Contagens: a API manda null para zero (ex.: nenhum cartão vermelho).
     if (definition.format === "number") {
       homeValue ??= 0;
       awayValue ??= 0;
@@ -265,8 +247,6 @@ function toStatistics(fixture: AfFixture): MatchStat[] {
     ];
   });
 }
-
-// ---- Escalações ----
 
 function toPosition(pos: string | null): LineupPosition | null {
   return pos === "G" || pos === "D" || pos === "M" || pos === "F" ? pos : null;
@@ -294,7 +274,7 @@ function toLineup(fixture: AfFixture, teamId: number): TeamLineup | null {
       number: player.number ?? null,
       position: toPosition(player.pos),
       grid: starter ? (player.grid ?? null) : null,
-      rating: rating && rating > 0 ? Math.round(rating * 10) / 10 : null, // "0" = sem nota
+      rating: rating && rating > 0 ? Math.round(rating * 10) / 10 : null,
       goals: s?.goals?.total ?? 0,
       assists: s?.goals?.assists ?? 0,
       yellowCards: s?.cards?.yellow ?? 0,
@@ -310,8 +290,6 @@ function toLineup(fixture: AfFixture, teamId: number): TeamLineup | null {
     substitutes: lineup.substitutes.map((p) => toPlayer(p, false)),
   };
 }
-
-// ---- Eventos ----
 
 function toEventType(
   type: string,
@@ -371,8 +349,6 @@ function toEvents(fixture: AfFixture): MatchEvent[] {
     .sort((a, b) => a.minute - b.minute || (a.extra ?? 0) - (b.extra ?? 0));
 }
 
-// ---- Tudo junto ----
-
 export interface AfMatchDetails {
   status: MatchStatus | null;
   homeScore: number | null;
@@ -387,7 +363,6 @@ export interface AfMatchDetails {
   events: MatchEvent[];
 }
 
-/** "Wilton Pereira Sampaio, Brazil" → "Wilton Pereira Sampaio". */
 function cleanReferee(name: string | null) {
   return name ? name.split(",")[0].trim() || null : null;
 }
