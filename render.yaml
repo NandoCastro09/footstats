@@ -1,0 +1,27 @@
+# Blueprint do Render para a API (apps/api).
+# Painel do Render → New → Blueprint → selecione este repositório.
+# Passo a passo completo em docs/DEPLOY.md.
+services:
+  - type: web
+    name: footstats-api
+    runtime: node
+    plan: free
+    region: virginia # mais próxima do Brasil entre as opções do plano gratuito
+    # Roda a partir da raiz do monorepo (o pnpm-lock.yaml fica aqui).
+    # --prod=false: o TypeScript (devDependency) é necessário para compilar.
+    buildCommand: npx -y pnpm@10 install --frozen-lockfile --prod=false && npx -y pnpm@10 --filter @footstats/api build
+    startCommand: node apps/api/dist/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Domínio(s) do front na Vercel, separados por vírgula. Ex.:
+      # https://footstats.vercel.app,https://footstats-*.vercel.app
+      - key: CORS_ORIGIN
+        sync: false # o Render pede o valor no painel ao criar o serviço
+      # Chave da football-data.org (dados reais do Brasileirão). Sem ela, a API usa o mock.
+      - key: FOOTBALL_DATA_TOKEN
+        sync: false
+      # Opcional: chave da API-Football (fotos, número da camisa e técnicos).
+      - key: API_FOOTBALL_KEY
+        sync: false
