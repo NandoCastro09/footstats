@@ -13,8 +13,8 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
 const variantStyles = {
   default: "border-line bg-surface",
   stat: "border-line bg-surface",
-  // Partida ao vivo: degradê azul do protótipo, texto branco (contorno de foco branco).
-  live: "on-dark border-transparent bg-gradient-live text-white shadow-hero",
+  // Partida ao vivo: borda laranja (sem gradiente).
+  live: "border-live/50 bg-surface",
 };
 
 export default function Card({

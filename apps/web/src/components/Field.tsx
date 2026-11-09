@@ -43,12 +43,12 @@ export default function Field({
   const describedBy = [hint && hintId, error && errorId].filter(Boolean).join(" ");
 
   return (
-    <div className={cn("flex flex-col gap-1", className)}>
-      <label htmlFor={controlId} className="text-sm font-medium text-ink">
+    <div className={cn("flex flex-col gap-1.5", className)}>
+      <label htmlFor={controlId} className="text-sm font-semibold text-ink">
         {label}
         {/* O atributo required já é anunciado pelo leitor de tela; o * é só visual. */}
         {required && (
-          <span className="text-danger" aria-hidden="true">
+          <span className="text-lime" aria-hidden="true">
             {" "}
             *
           </span>
@@ -68,7 +68,7 @@ export default function Field({
       <p
         id={errorId}
         aria-live="polite"
-        className="flex min-h-5 items-start gap-1 text-sm font-medium text-danger"
+        className="flex min-h-5 items-start gap-1.5 text-sm font-medium text-alert-text"
       >
         {error && (
           <>

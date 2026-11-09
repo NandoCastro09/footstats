@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, Clock, Trophy } from "lucide-react";
-import Badge from "./Badge";
-import Card from "./Card";
+import { ArrowRight, MapPin } from "lucide-react";
 import TeamCrest from "./TeamCrest";
 import { cn } from "../lib/cn";
 import { formatKickoff, formatTime } from "../lib/format";
@@ -9,83 +7,8 @@ import type { Match, TeamSummary } from "../types";
 
 interface MatchCardProps {
   match: Match;
-}
-
-function StatusBadge({ match }: MatchCardProps) {
-  const icon = "h-3.5 w-3.5";
-  switch (match.status) {
-    case "live":
-      return (
-        <Badge
-          variant="live"
-          icon={
-            <span
-              className="h-1.5 w-1.5 animate-live-pulse rounded-full bg-white"
-              aria-hidden="true"
-            />
-          }
-        >
-          Ao vivo{match.minute !== null && ` · ${match.minute}'`}
-        </Badge>
-      );
-    case "finished":
-      return (
-        <Badge
-          variant="default"
-          icon={<CheckCircle2 className={icon} aria-hidden="true" />}
-        >
-          Encerrado
-        </Badge>
-      );
-    case "scheduled":
-      return (
-        <Badge
-          variant="info"
-          icon={<Clock className={icon} aria-hidden="true" />}
-        >
-          {formatTime(match.kickoff)}
-        </Badge>
-      );
-  }
-}
-
-interface TeamSideProps {
-  team: TeamSummary;
-  isWinner: boolean;
-  /** Perdedor fica esmaecido, como no protótipo. */
-  isLoser: boolean;
-  /** Dentro do card ao vivo (fundo azul). */
-  onHero: boolean;
-}
-
-function TeamSide({ team, isWinner, isLoser, onHero }: TeamSideProps) {
-  return (
-    <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
-      <TeamCrest team={team} />
-      <Link
-        to={`/times/${team.id}`}
-        className={cn(
-          // relative z-10: fica acima do link que cobre o card inteiro.
-          "relative z-10 inline-flex min-h-touch items-center gap-1 rounded-control px-1 font-display text-sm font-medium underline-offset-2 hover:underline",
-          onHero
-            ? "text-white"
-            : isLoser
-              ? "text-ink-muted hover:text-primary"
-              : "text-ink hover:text-primary"
-        )}
-      >
-        {isWinner && (
-          <Trophy
-            className="h-4 w-4 shrink-0 text-success"
-            aria-hidden="true"
-          />
-        )}
-        {/* Nome inteiro em até 2 linhas ("Brighton & Hove Albion"), sem "…". */}
-        <span className="line-clamp-2 text-balance break-words">{team.name}</span>
-        {isWinner && <span className="sr-only">(vencedor)</span>}
-      </Link>
-    </div>
-  );
+  /** Rodada atual da liga: partida agendada de rodada anterior aparece como "Adiada". */
+  currentRound?: number;
 }
 
 function describeMatch(match: Match) {
@@ -97,102 +20,157 @@ function describeMatch(match: Match) {
   return `${homeTeam.name} ${homeScore}, ${awayTeam.name} ${awayScore}, ${situation}`;
 }
 
-export default function MatchCard({ match }: MatchCardProps) {
+/** Ponto pulsando + "AO VIVO" (o texto garante que não depende só da cor). */
+export function LiveChip({ minute }: { minute?: number | null }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-live-light px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] text-live-text">
+      <span className="h-2 w-2 animate-live-pulse rounded-full bg-live" aria-hidden="true" />
+      Ao vivo
+      {minute != null && <span className="tabular-nums">· {minute}'</span>}
+    </span>
+  );
+}
+
+function TeamName({
+  team,
+  align,
+  dim,
+}: {
+  team: TeamSummary;
+  align: "left" | "right";
+  dim: boolean;
+}) {
+  return (
+    // Celular: escudo em cima e nome embaixo (o nome ganha a largura toda da coluna
+    // e não quebra no meio da palavra). A partir de sm: lado a lado.
+    <div
+      className={cn(
+        "flex min-w-0 flex-col items-center gap-2 text-center sm:flex-row sm:gap-3",
+        align === "right" ? "sm:flex-row-reverse sm:text-right" : "sm:text-left"
+      )}
+    >
+      <TeamCrest team={team} size="md" className="h-10 w-10" />
+      <Link
+        to={`/times/${team.id}`}
+        className={cn(
+          // relative z-10: fica acima do link que cobre a linha inteira.
+          "relative z-10 min-w-0 max-w-full rounded-control font-display text-base font-bold uppercase leading-tight underline-offset-2 hover:underline sm:text-xl",
+          dim ? "text-muted hover:text-ink" : "text-ink hover:text-lime"
+        )}
+      >
+        <span className="line-clamp-2 text-balance">{team.name}</span>
+      </Link>
+    </div>
+  );
+}
+
+/**
+ * Partida em LINHA, estilo placar: horário | times | estádio | ação.
+ * No celular quebra em 3 linhas (horário · times · estádio + botão).
+ */
+export default function MatchCard({ match, currentRound }: MatchCardProps) {
   const { homeTeam, awayTeam, homeScore, awayScore, status } = match;
   const hasScore = homeScore !== null && awayScore !== null;
   const finished = status === "finished" && hasScore;
+  const live = status === "live";
   const homeWins = finished && homeScore > awayScore;
   const awayWins = finished && awayScore > homeScore;
-  const draw = finished && homeScore === awayScore;
-  const live = status === "live";
-  // No degradê azul o cinza não tem contraste: usa branco a 90%.
-  const muted = live ? "text-white/90" : "text-ink-muted";
+  const postponed = status === "scheduled" && currentRound !== undefined && match.round < currentRound;
 
   return (
-    <Card
-      as="article"
-      variant={live ? "live" : "default"}
-      interactive
+    <article
       aria-label={describeMatch(match)}
-      className="relative flex h-full flex-col gap-3"
+      className={cn(
+        "relative flex flex-wrap items-center gap-x-4 gap-y-3 rounded-[14px] border px-4 py-4 transition-colors sm:gap-x-7 sm:px-5",
+        finished ? "border-line bg-surface-2" : "border-line bg-surface",
+        live && "border-live/50",
+        "hover:border-line-strong"
+      )}
     >
-      <div
-        className={cn("flex items-center justify-between gap-2 text-xs", muted)}
-      >
-        <StatusBadge match={match} />
-        <span className="font-semibold uppercase tracking-[0.08em]">
-          Rodada {match.round}
-        </span>
+      {/* 1. Horário / status + rodada */}
+      <div className="flex w-full items-baseline gap-3 sm:w-[84px] sm:flex-col sm:gap-1">
+        {live ? (
+          <LiveChip minute={match.minute} />
+        ) : finished ? (
+          <span className="rounded-md bg-surface px-2 py-1 text-xs font-bold uppercase tracking-[0.1em] text-ink-2">
+            Fim
+          </span>
+        ) : (
+          <span className="font-display text-[28px] font-bold leading-none tabular-nums text-ink">
+            {formatTime(match.kickoff)}
+          </span>
+        )}
+        <span className="text-xs font-medium uppercase tracking-[0.08em] text-muted">Rodada {match.round}</span>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <TeamSide
-          team={homeTeam}
-          isWinner={homeWins}
-          isLoser={awayWins}
-          onHero={live}
-        />
-
-        <div className="flex flex-col items-center gap-1">
-          {/* O link cobre o card inteiro (after:inset-0): clicar em qualquer ponto
-              abre a partida; os nomes dos times continuam levando ao time. */}
-          <Link
-            to={`/partidas/${match.id}`}
-            className={cn(
-              "rounded-control after:absolute after:inset-0 after:rounded-card after:content-['']",
-              // Foco de teclado contorna o card todo, não só o placar.
-              "focus-visible:outline-none focus-visible:after:outline focus-visible:after:outline-[3px] focus-visible:after:outline-offset-2",
-              live
-                ? "focus-visible:after:outline-white"
-                : "focus-visible:after:outline-primary"
-            )}
-          >
-            <span className="sr-only">
-              Ver detalhes da partida: {describeMatch(match)}
-            </span>
-            <p
+      {/* 2. Times + placar */}
+      <div className="grid min-w-0 flex-[1_1_380px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+        <TeamName team={homeTeam} align="right" dim={awayWins} />
+        {/* O link cobre a linha inteira (after:inset-0): clicar em qualquer ponto
+            abre a partida; nomes dos times e o botão continuam com o próprio link. */}
+        <Link
+          to={`/partidas/${match.id}`}
+          className={cn(
+            "rounded-control after:absolute after:inset-0 after:rounded-[14px] after:content-['']",
+            "focus-visible:outline-none focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-lime"
+          )}
+        >
+          <span className="sr-only">Ver detalhes da partida: {describeMatch(match)}</span>
+          {hasScore ? (
+            <span
               aria-hidden="true"
               className={cn(
-                "font-display font-bold tabular-nums",
-                live ? "text-4xl text-white" : "text-3xl text-ink"
+                "block whitespace-nowrap rounded-[10px] bg-bg px-3 py-1 font-display text-[30px] font-bold leading-tight tabular-nums",
+                live ? "text-lime" : "text-ink"
               )}
             >
-              {hasScore ? (
-                <>
-                  {homeScore}
-                  <span className={cn("mx-1.5", muted)} aria-hidden="true">
-                    –
-                  </span>
-                  {awayScore}
-                </>
-              ) : (
-                <span className={cn("text-xl", muted)}>x</span>
-              )}
-            </p>
-          </Link>
-          {draw && (
-            <span className={cn("text-xs font-medium", muted)}>Empate</span>
+              {homeScore}
+              <span className="mx-1.5 text-muted">–</span>
+              {awayScore}
+            </span>
+          ) : (
+            <span aria-hidden="true" className="block w-8 text-center font-display text-xl font-bold text-muted">
+              x
+            </span>
           )}
-        </div>
-
-        <TeamSide
-          team={awayTeam}
-          isWinner={awayWins}
-          isLoser={homeWins}
-          onHero={live}
-        />
+        </Link>
+        <TeamName team={awayTeam} align="left" dim={homeWins} />
       </div>
 
-      <p
-        className={cn(
-          "mt-auto border-t pt-2 text-center text-xs",
-          live ? "border-white/20" : "border-line",
-          muted
+      {/* 3. Estádio + aviso de adiada */}
+      <div className="flex min-w-0 flex-[1_1_150px] flex-wrap items-center gap-2 text-[13px] text-muted sm:flex-[1_1_220px]">
+        {match.venue && (
+          <span className="flex min-w-0 items-center gap-1.5">
+            <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="truncate">{match.venue}</span>
+          </span>
         )}
-      >
-        {formatKickoff(match.kickoff)}
-        {match.venue && ` · ${match.venue}`}
-      </p>
-    </Card>
+        {postponed && (
+          <span className="rounded-full border border-alert/60 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.06em] text-alert-text">
+            Adiado
+          </span>
+        )}
+      </div>
+
+      {/* 4. Ação */}
+      {status === "scheduled" ? (
+        <Link
+          to={`/palpites?partida=${match.id}`}
+          className="relative z-10 ml-auto inline-flex min-h-touch items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-semibold text-ink hover:border-lime"
+        >
+          Palpitar
+          <span className="sr-only">: {homeTeam.name} contra {awayTeam.name}</span>
+          <ArrowRight className="h-4 w-4 text-lime" aria-hidden="true" />
+        </Link>
+      ) : (
+        <span
+          aria-hidden="true"
+          className="ml-auto inline-flex min-h-touch items-center gap-2 px-1 text-sm font-semibold text-ink-2"
+        >
+          Detalhes
+          <ArrowRight className="h-4 w-4 text-lime" />
+        </span>
+      )}
+    </article>
   );
 }

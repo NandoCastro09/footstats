@@ -2,9 +2,9 @@ import { cn } from "../../lib/cn";
 import { formatStat } from "../../lib/format";
 import type { Match, MatchStat } from "../../types";
 
-// Cores dos times em toda a tela da partida: mandante azul, visitante coral.
-const HOME = "#5AA2E8";
-const AWAY = "#E8734A";
+// Cores dos times em toda a tela da partida: mandante lime, visitante laranja.
+const HOME = "#C8F135";
+const AWAY = "#FF7A45";
 
 function Possession({ stat, match }: { stat: MatchStat; match: Match }) {
   const home = stat.home ?? 50;
@@ -78,17 +78,17 @@ function StatRow({ stat, match }: { stat: MatchStat; match: Match }) {
   const homeColor = cards
     ? "#D99A2B"
     : red
-      ? "#E8837F"
+      ? "#FF9A62"
       : home >= away
         ? HOME
-        : "#3A4049";
+        : "#3A463D";
   const awayColor = cards
     ? "#8A6A2A"
     : red
       ? "#9A3A38"
       : away > home
         ? AWAY
-        : "#3A4049";
+        : "#3A463D";
 
   return (
     <li className="flex flex-col gap-1.5">

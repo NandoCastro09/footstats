@@ -113,7 +113,7 @@ export default function Modal({
         aria-describedby={bodyId}
         tabIndex={-1}
         className={cn(
-          "relative w-full overflow-hidden rounded-card border border-line bg-surface shadow-hero",
+          "relative w-full overflow-hidden rounded-panel border border-line bg-surface shadow-2xl",
           sizeStyles[size]
         )}
       >

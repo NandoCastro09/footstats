@@ -77,8 +77,8 @@ export default function MatchTabs<T extends string>({
             className={cn(
               "min-h-touch flex-1 rounded-lg px-2 text-sm font-semibold transition-colors",
               selected
-                ? "bg-ink text-[#123F68]"
-                : "text-white/85 hover:bg-white/10 hover:text-white"
+                ? "bg-lime text-ink-inverse"
+                : "text-ink-2 hover:bg-surface hover:text-ink"
             )}
           >
             {tab.label}

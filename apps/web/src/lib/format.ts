@@ -83,3 +83,39 @@ const longDateFormatter = new Intl.DateTimeFormat("pt-BR", {
 export function formatLongKickoff(iso: string) {
   return longDateFormatter.format(new Date(iso));
 }
+
+const dayHeadingFormatter = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  timeZone: TIME_ZONE,
+});
+
+/** Cabeçalho dos grupos de partidas. Ex.: "sábado, 14 de novembro" */
+export function formatDayHeading(iso: string) {
+  return dayHeadingFormatter.format(new Date(iso));
+}
+
+const dayKeyFormatter = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: TIME_ZONE,
+});
+
+/** Chave do dia no fuso de Brasília, para agrupar partidas. Ex.: "2026-11-14" */
+export function dayKey(iso: string) {
+  return dayKeyFormatter.format(new Date(iso));
+}
+
+const shortDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "short",
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: TIME_ZONE,
+});
+
+/** Ex.: "sáb., 14/11" */
+export function formatShortDate(iso: string) {
+  return shortDateFormatter.format(new Date(iso));
+}

@@ -19,7 +19,7 @@ function Side({ team }: { team: TeamSummary }) {
       <Link
         to={`/times/${team.id}`}
         // Nome inteiro em até 2 linhas, sem cortar com "…".
-        className="line-clamp-2 max-w-full text-balance break-words rounded-control font-display text-sm font-medium text-white hover:underline sm:text-base"
+        className="line-clamp-2 max-w-full text-balance break-words rounded-control font-display text-lg font-bold uppercase leading-tight text-ink hover:text-lime hover:underline sm:text-2xl"
       >
         {team.name}
       </Link>
@@ -46,13 +46,13 @@ function StatusPill({ details }: { details: MatchDetails }) {
   }
   if (match.status === "finished") {
     return (
-      <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-white">
+      <span className="rounded-full bg-bg px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-ink-2">
         {phase && phase !== "Encerrado" ? phase : "Encerrado"}
       </span>
     );
   }
   return (
-    <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-white">
+    <span className="rounded-full bg-bg px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-ink-2">
       Agendado
     </span>
   );
@@ -71,16 +71,16 @@ export default function MatchHero({
     : `${match.homeTeam.name} contra ${match.awayTeam.name}`;
 
   return (
-    <header className="on-dark overflow-hidden rounded-card bg-gradient-hero p-4 shadow-hero sm:p-6">
+    <header className="overflow-hidden rounded-panel border border-[#243027] bg-surface p-4 sm:p-6">
       <div className="flex items-center justify-between gap-2">
         <Link
           to="/"
-          className="inline-flex min-h-touch items-center gap-1 rounded-control pr-2 text-sm font-medium text-white hover:underline"
+          className="inline-flex min-h-touch items-center gap-1 rounded-control pr-2 text-sm font-medium text-ink-2 hover:text-ink hover:underline"
         >
           <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           Partidas
         </Link>
-        <p className="text-right text-xs font-semibold uppercase tracking-[0.1em] text-white/85">
+        <p className="text-right text-xs font-semibold uppercase tracking-[0.1em] text-muted">
           {leagueName && `${leagueName} · `}Rodada {match.round}
         </p>
       </div>
@@ -101,20 +101,20 @@ export default function MatchHero({
           <StatusPill details={details} />
           <p
             aria-hidden="true"
-            className="font-display text-4xl font-bold tabular-nums text-white sm:text-5xl"
+            className="font-display text-5xl font-bold tabular-nums text-ink sm:text-6xl"
           >
             {hasScore ? (
               <>
                 {match.homeScore}
-                <span className="mx-2 text-white/70">–</span>
+                <span className="mx-2 text-muted">–</span>
                 {match.awayScore}
               </>
             ) : (
-              <span className="text-3xl text-white/80">x</span>
+              <span className="text-3xl text-muted">x</span>
             )}
           </p>
           {halfTime && match.status !== "scheduled" && (
-            <p className="text-xs text-white/85">
+            <p className="text-xs text-muted">
               Intervalo: {halfTime.home} – {halfTime.away}
             </p>
           )}
@@ -122,7 +122,7 @@ export default function MatchHero({
         <Side team={match.awayTeam} />
       </div>
 
-      <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pb-4 text-center text-sm text-white/85">
+      <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pb-4 text-center text-sm text-muted">
         {match.status === "scheduled" && (
           <li className="first-letter:uppercase">
             {formatLongKickoff(match.kickoff)}

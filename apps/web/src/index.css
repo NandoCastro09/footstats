@@ -34,15 +34,10 @@
     overflow: hidden;
   }
 
-  /* Foco sempre visível (teclado). */
+  /* Foco sempre visível (teclado), em lime. */
   :focus-visible {
-    outline: 3px solid theme("colors.primary.DEFAULT");
+    outline: 2px solid theme("colors.lime");
     outline-offset: 2px;
-  }
-
-  /* Em fundos azuis o contorno azul some: usa branco. */
-  .on-dark :focus-visible {
-    outline-color: #fff;
   }
 
   @media (prefers-reduced-motion: reduce) {

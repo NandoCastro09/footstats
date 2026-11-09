@@ -1,7 +1,5 @@
 import { Pencil, Trash2 } from "lucide-react";
-import Badge from "../Badge";
 import Button from "../Button";
-import Card from "../Card";
 import TeamCrest from "../TeamCrest";
 import { cn } from "../../lib/cn";
 import { formatDateTime, formatKickoff, maskEmail } from "../../lib/format";
@@ -15,6 +13,22 @@ interface PredictionCardProps {
   onDelete: (prediction: Prediction) => void;
 }
 
+type Outcome = "exact" | "winner" | "wrong" | "pending";
+
+/** Compara o palpite com o resultado (só depois que a partida termina). */
+function outcomeOf({ match, homeGoals, awayGoals }: Prediction): Outcome {
+  if (match.status !== "finished" || match.homeScore === null || match.awayScore === null) return "pending";
+  if (match.homeScore === homeGoals && match.awayScore === awayGoals) return "exact";
+  return Math.sign(homeGoals - awayGoals) === Math.sign(match.homeScore - match.awayScore) ? "winner" : "wrong";
+}
+
+const outcomeChip: Record<Outcome, { label: string; className: string }> = {
+  exact: { label: "Cravou", className: "bg-lime text-ink-inverse" },
+  winner: { label: "Acertou vencedor", className: "bg-zone-sula text-ink-inverse" },
+  wrong: { label: "Errou", className: "bg-surface-strong text-ink" },
+  pending: { label: "Aguardando", className: "border border-lime/40 text-lime" },
+};
+
 export default function PredictionCard({
   prediction,
   isEditing,
@@ -23,59 +37,70 @@ export default function PredictionCard({
 }: PredictionCardProps) {
   const { match, homeGoals, awayGoals } = prediction;
   const edited = prediction.updatedAt !== prediction.createdAt;
-  const matchName = `${match.homeTeam.name} x ${match.awayTeam.name}`;
   const { competitions } = useLeague();
   const leagueName = competitions.find((c) => c.code === match.competition)?.name;
+  const outcome = outcomeChip[outcomeOf(prediction)];
+  const finished = match.status === "finished" && match.homeScore !== null && match.awayScore !== null;
 
   return (
-    <Card
-      as="article"
-      className={cn("flex h-full flex-col gap-3", isEditing && "ring-2 ring-primary")}
-      aria-label={`Palpite de ${prediction.name}: ${match.homeTeam.name} ${homeGoals} x ${awayGoals} ${match.awayTeam.name}`}
+    <article
+      className={cn(
+        "flex flex-col gap-3 rounded-[14px] border bg-surface p-4",
+        isEditing ? "border-lime" : "border-line"
+      )}
+      aria-label={`Palpite de ${prediction.name}: ${match.homeTeam.name} ${homeGoals} x ${awayGoals} ${match.awayTeam.name}. ${outcome.label}.`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="truncate font-display text-base font-bold text-ink">{prediction.name}</h3>
-          <p className="truncate text-sm text-ink-muted">{maskEmail(prediction.email)}</p>
-        </div>
-        {isEditing && (
-          <Badge variant="info" icon={<Pencil className="h-3.5 w-3.5" aria-hidden="true" />}>
-            Editando
-          </Badge>
-        )}
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+          {formatKickoff(match.kickoff)}
+        </p>
+        <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.06em]", outcome.className)}>
+          {isEditing ? "Editando" : outcome.label}
+        </span>
       </div>
 
-      <div className="flex items-center justify-center gap-3 rounded-control bg-surface-raised p-3">
+      <div className="flex items-center gap-3">
         <TeamCrest team={match.homeTeam} size="sm" />
-        <p className="font-display text-2xl font-bold tabular-nums text-ink">
+        <p className="font-display text-[32px] font-bold leading-none tabular-nums text-ink">
           {homeGoals}
-          <span className="mx-1 text-ink-muted" aria-hidden="true">
+          <span className="mx-1.5 text-muted" aria-hidden="true">
             –
           </span>
           {awayGoals}
         </p>
         <TeamCrest team={match.awayTeam} size="sm" />
+        {finished && (
+          <p className="ml-auto text-right text-xs text-muted">
+            Resultado
+            <span className="block font-display text-lg font-bold tabular-nums text-ink-2">
+              {match.homeScore} – {match.awayScore}
+            </span>
+          </p>
+        )}
       </div>
-      <p className="text-center text-sm text-ink">
-        <span className="font-medium">{matchName}</span>
-        <span className="block text-ink-muted">
-          {leagueName && `${leagueName} · `}
-          {formatKickoff(match.kickoff)}
+
+      <p className="text-sm text-ink">
+        <span className="font-semibold">
+          {match.homeTeam.name} x {match.awayTeam.name}
         </span>
+        {leagueName && <span className="block text-muted">{leagueName}</span>}
       </p>
 
       {prediction.comment && (
-        <blockquote className="border-l-4 border-primary/40 pl-3 text-sm italic text-ink">
+        <blockquote className="border-l-2 border-lime/50 pl-3 text-sm italic text-ink-2">
           “{prediction.comment}”
         </blockquote>
       )}
 
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2">
-        <p className="text-xs text-ink-muted">
-          {edited ? "Editado em " : "Enviado em "}
-          <time dateTime={edited ? prediction.updatedAt : prediction.createdAt}>
-            {formatDateTime(edited ? prediction.updatedAt : prediction.createdAt)}
-          </time>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2">
+        <p className="min-w-0 text-xs text-muted">
+          <span className="font-semibold text-ink-2">{prediction.name}</span> · {maskEmail(prediction.email)}
+          <span className="block">
+            {edited ? "Editado em " : "Enviado em "}
+            <time dateTime={edited ? prediction.updatedAt : prediction.createdAt}>
+              {formatDateTime(edited ? prediction.updatedAt : prediction.createdAt)}
+            </time>
+          </span>
         </p>
         <div className="flex gap-1">
           <Button
@@ -96,6 +121,6 @@ export default function PredictionCard({
           </Button>
         </div>
       </div>
-    </Card>
+    </article>
   );
 }

@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { SkeletonGrid } from "../Skeleton";
+import { RouteSkeleton } from "../skeletons/PageSkeletons";
 import BottomNav from "./BottomNav";
 import DemoBanner from "./DemoBanner";
 import Footer from "./Footer";
@@ -28,7 +28,7 @@ export default function Layout() {
     >
       <a
         href="#conteudo"
-        className="sr-only z-[70] rounded-control bg-primary-solid px-4 py-3 font-semibold text-white shadow-lg focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        className="sr-only z-[70] rounded-control bg-primary-solid px-4 py-3 font-semibold text-ink-inverse shadow-lg focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
         Pular para o conteúdo
       </a>
@@ -42,8 +42,8 @@ export default function Layout() {
         // skeleton → conteúdo não "empurra" o rodapé na tela (evita CLS).
         className="mx-auto min-h-screen w-full max-w-6xl flex-1 px-4 py-8 outline-none"
       >
-        {/* Enquanto o código da página (lazy) é baixado. */}
-        <Suspense fallback={<SkeletonGrid count={6} label="Carregando página…" />}>
+        {/* Enquanto o código da página (lazy) é baixado: skeleton no formato da tela. */}
+        <Suspense fallback={<RouteSkeleton />}>
           <Outlet />
         </Suspense>
       </main>

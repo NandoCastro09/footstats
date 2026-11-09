@@ -1,17 +1,21 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronUp, Crown, Goal, Shield, Swords } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronUp, Crown, Shield, Swords } from "lucide-react";
 import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import LeagueTable from "../components/LeagueTable";
+import PageHero, { SectionTitle } from "../components/PageHero";
 import ScorersTable from "../components/ScorersTable";
-import Skeleton, { SkeletonGrid } from "../components/Skeleton";
+import { SkeletonRegion } from "../components/Skeleton";
+import { StandingsContentSkeleton, TableSkeleton } from "../components/skeletons/PageSkeletons";
 import TeamCrest from "../components/TeamCrest";
 import { useScorers, useStandings } from "../hooks/useApi";
 import { usePageTitle } from "../hooks/usePageTitle";
 import LeagueTag from "../components/LeagueTag";
 import { useLeague } from "../league/leagueContext";
+import { cn } from "../lib/cn";
+import { zonesFor } from "../lib/zones";
 import type { Standing } from "../types";
 
 function Highlight({
@@ -19,28 +23,49 @@ function Highlight({
   label,
   standing,
   value,
+  featured = false,
+  children,
 }: {
   icon: ReactNode;
   label: string;
   standing: Standing;
   value: string;
+  /** Card do líder: inteiro em lime, texto escuro. */
+  featured?: boolean;
+  children?: ReactNode;
 }) {
   return (
-    <li className="flex items-center gap-3">
-      <TeamCrest team={standing.team} />
-      <div className="min-w-0">
-        <p className="eyebrow flex items-center gap-1 text-white/80">
-          {icon}
-          {label}
-        </p>
-        <Link
-          to={`/times/${standing.team.id}`}
-          className="block truncate rounded-control font-display text-lg font-bold text-white hover:underline"
-        >
-          {standing.team.name}
-        </Link>
-        <p className="text-sm text-white/90">{value}</p>
+    <li
+      className={cn(
+        "flex flex-col gap-4 rounded-2xl border p-5",
+        featured ? "border-lime bg-lime text-ink-inverse" : "border-line bg-surface text-ink"
+      )}
+    >
+      <p
+        className={cn(
+          "flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em]",
+          featured ? "text-ink-inverse" : "text-muted"
+        )}
+      >
+        {icon}
+        {label}
+      </p>
+      <div className="flex items-center gap-3">
+        <TeamCrest team={standing.team} size="md" />
+        <div className="min-w-0">
+          <Link
+            to={`/times/${standing.team.id}`}
+            className={cn(
+              "block truncate rounded-control font-display text-2xl font-bold uppercase leading-tight hover:underline",
+              featured ? "text-ink-inverse" : "text-ink hover:text-lime"
+            )}
+          >
+            {standing.team.name}
+          </Link>
+          <p className={cn("text-sm", featured ? "text-ink-inverse" : "text-ink-2")}>{value}</p>
+        </div>
       </div>
+      {children}
     </li>
   );
 }
@@ -64,13 +89,12 @@ function LeagueScorers() {
   const visible = expanded ? scorers : scorers?.slice(0, PREVIEW);
 
   return (
-    <section aria-labelledby="artilharia" className="space-y-4">
-      <h2 id="artilharia" className="eyebrow flex items-center gap-2">
-        <Goal className="h-4 w-4 text-success" aria-hidden="true" />
-        Artilharia
-      </h2>
+    <section aria-labelledby="artilharia" className="space-y-5">
+      <SectionTitle id="artilharia">Artilharia</SectionTitle>
       {isPending ? (
-        <Skeleton className="h-72 rounded-card" />
+        <SkeletonRegion label="Carregando artilharia…">
+          <TableSkeleton rows={8} form={false} />
+        </SkeletonRegion>
       ) : isError ? (
         <ErrorState error={error} onRetry={() => refetch()} retrying={isFetching} title="Não foi possível carregar a artilharia" />
       ) : scorers.length === 0 ? (
@@ -81,21 +105,23 @@ function LeagueScorers() {
             <ScorersTable scorers={visible ?? []} caption={`Artilharia: ${competition?.name ?? code} ${competition?.season ?? ""}`} />
           </div>
           {scorers.length > PREVIEW && (
-            <Button
-              variant="secondary"
-              aria-expanded={expanded}
-              aria-controls="lista-artilharia"
-              onClick={() => setExpanded((value) => !value)}
-              icon={
-                expanded ? (
-                  <ChevronUp className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                )
-              }
-            >
-              {expanded ? "Mostrar só os 10 primeiros" : `Ver todos os ${scorers.length} artilheiros`}
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                variant="secondary"
+                aria-expanded={expanded}
+                aria-controls="lista-artilharia"
+                onClick={() => setExpanded((value) => !value)}
+                icon={
+                  expanded ? (
+                    <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                  )
+                }
+              >
+                {expanded ? "Mostrar só os 10 primeiros" : `Ver todos os ${scorers.length} artilheiros`}
+              </Button>
+            </div>
           )}
         </>
       )}
@@ -107,44 +133,49 @@ export default function StandingsPage() {
   usePageTitle("Classificação");
   const { code, competition } = useLeague();
   const { data: standings, isPending, isError, error, refetch, isFetching } = useStandings(code);
+  const iconClass = "h-4 w-4";
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold text-ink">Classificação</h1>
-        <p className="mt-1 text-ink-muted">
-          Tabela e artilharia. Clique no cabeçalho de uma coluna para ordenar.
-        </p>
-        <div className="mt-2">
+    <div className="space-y-10">
+      <PageHero
+        eyebrow={`Tabela · ${competition ? `${competition.name} ${competition.season}` : "carregando liga"}`}
+        title="Classificação"
+        description="Pontos, saldo e a sequência dos últimos jogos de cada time. Clique no cabeçalho de uma coluna para ordenar."
+      >
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+          {/* A fonte de dados só traz a tabela geral (sem mandante/visitante). */}
+          <p className="rounded-[14px] border border-line bg-surface p-1">
+            <span className="inline-flex min-h-touch items-center rounded-[10px] bg-lime px-5 text-sm font-bold text-ink-inverse">
+              Tabela geral
+            </span>
+          </p>
           <LeagueTag />
         </div>
-      </header>
+      </PageHero>
 
       {isPending ? (
-        <div className="space-y-6">
-          <SkeletonGrid count={3} itemClassName="h-24" label="Carregando classificação…" />
-          <Skeleton className="h-96 rounded-card" />
-        </div>
+        <StandingsContentSkeleton />
       ) : isError ? (
         <ErrorState error={error} onRetry={() => refetch()} retrying={isFetching} />
       ) : standings.length === 0 ? (
         <EmptyState title="Classificação indisponível" description="Nenhum time cadastrado." />
       ) : (
         <>
-          {/* Faixa em degradê, como o cabeçalho de campeonato do protótipo. */}
-          <section
-            aria-labelledby="destaques"
-            className="on-dark rounded-card bg-gradient-hero p-5 shadow-hero sm:p-6"
-          >
+          <section aria-labelledby="destaques">
             <h2 id="destaques" className="sr-only">
               Destaques
             </h2>
             {(() => {
               const { leader, bestAttack, bestDefense } = highlights(standings);
-              const iconClass = "h-3.5 w-3.5";
+              const { danger } = zonesFor(code, standings.length);
+              const byPosition = (position: number) => standings.find((row) => row.position === position);
+              const lastSafe = danger && byPosition(danger.from - 1);
+              const firstInDanger = danger && byPosition(danger.from);
+              const gap = lastSafe && firstInDanger ? lastSafe.points - firstInDanger.points : null;
               return (
-                <ul className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <ul className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
                   <Highlight
+                    featured
                     icon={<Crown className={iconClass} aria-hidden="true" />}
                     label="Líder"
                     standing={leader}
@@ -162,16 +193,36 @@ export default function StandingsPage() {
                     standing={bestDefense}
                     value={`${bestDefense.goalsAgainst} gols sofridos`}
                   />
+                  {danger && lastSafe && firstInDanger && gap !== null && (
+                    <li className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5">
+                      <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em] text-muted">
+                        <AlertTriangle className={iconClass} aria-hidden="true" />
+                        {danger.label}
+                      </p>
+                      <p className="font-display text-5xl font-bold leading-none tabular-nums text-alert-text">
+                        {gap}
+                        <span className="ml-2 font-sans text-base font-medium text-ink-2">
+                          {gap === 1 ? "ponto" : "pontos"}
+                        </span>
+                      </p>
+                      <p className="text-sm text-ink-2">
+                        separam o {lastSafe.position}º ({lastSafe.team.name}) do {firstInDanger.position}º (
+                        {firstInDanger.team.name}).
+                      </p>
+                    </li>
+                  )}
                 </ul>
               );
             })()}
           </section>
 
-          <section aria-labelledby="tabela">
-            <h2 id="tabela" className="sr-only">
-              Tabela completa
-            </h2>
-            <LeagueTable standings={standings} caption={`${competition?.name ?? code} ${competition?.season ?? ""}`} />
+          <section aria-labelledby="tabela" className="space-y-5">
+            <SectionTitle id="tabela">Tabela completa</SectionTitle>
+            <LeagueTable
+              standings={standings}
+              competition={code}
+              caption={`${competition?.name ?? code} ${competition?.season ?? ""}`}
+            />
           </section>
 
           <LeagueScorers />

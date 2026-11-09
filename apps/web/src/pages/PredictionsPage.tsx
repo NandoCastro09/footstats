@@ -3,7 +3,8 @@ import { MessageSquarePlus } from "lucide-react";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import Modal from "../components/Modal";
-import { SkeletonGrid } from "../components/Skeleton";
+import PageHero, { SectionTitle } from "../components/PageHero";
+import { PredictionListSkeleton } from "../components/skeletons/PageSkeletons";
 import PredictionCard from "../components/predictions/PredictionCard";
 import PredictionForm from "../components/predictions/PredictionForm";
 import { useToast } from "../components/toast/toastContext";
@@ -18,7 +19,7 @@ export default function PredictionsPage() {
   const toast = useToast();
   const predictionsQuery = usePredictions();
   const deleteMutation = useDeletePrediction();
-  const { code: league } = useLeague();
+  const { code: league, competition } = useLeague();
 
   const [editing, setEditing] = useState<Prediction | null>(null);
   const [toDelete, setToDelete] = useState<Prediction | null>(null);
@@ -44,20 +45,23 @@ export default function PredictionsPage() {
   const predictions = predictionsQuery.data ?? [];
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold text-ink">Palpites</h1>
-        <p className="mt-1 text-ink-muted">
-          Dê seu palpite para os próximos jogos. Você pode editar ou excluir depois.
-        </p>
-      </header>
+    <div className="space-y-10">
+      <PageHero
+        eyebrow={`Palpites · ${competition ? `${competition.name} ${competition.season}` : "carregando liga"}`}
+        title={
+          <>
+            Crave o <span className="text-lime">placar</span>
+          </>
+        }
+        description="Escolha uma partida que ainda não começou e diga quanto vai ficar. Você pode editar ou excluir o palpite depois."
+      />
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="flex flex-wrap items-start gap-8">
         <section
           aria-labelledby="form-title"
-          className="rounded-card border border-line bg-surface p-4 sm:p-6 lg:sticky lg:top-20"
+          className="min-w-0 flex-[999_1_560px] rounded-panel border border-line bg-surface p-5 sm:p-7"
         >
-          <h2 id="form-title" className="mb-2 text-xl font-bold text-ink">
+          <h2 id="form-title" className="mb-3 font-display text-3xl font-extrabold uppercase text-ink">
             {editing ? "Editar palpite" : "Novo palpite"}
           </h2>
           {/* key: ao trocar entre criar/editar, o formulário reinicia com os valores certos. */}
@@ -68,23 +72,18 @@ export default function PredictionsPage() {
           />
         </section>
 
-        <section aria-labelledby="lista-title" className="space-y-4">
-          <h2 id="lista-title" className="eyebrow">
+        <section aria-labelledby="lista-title" className="min-w-0 flex-[1_1_320px] space-y-4">
+          <SectionTitle id="lista-title" size="md">
             Palpites enviados
             {predictionsQuery.isSuccess && (
-              <span className="ml-1 font-medium">
+              <span className="ml-2 font-sans text-base font-medium normal-case text-muted">
                 · {predictions.length}
               </span>
             )}
-          </h2>
+          </SectionTitle>
 
           {predictionsQuery.isPending ? (
-            <SkeletonGrid
-              count={4}
-              itemClassName="h-56"
-              className="grid gap-4 sm:grid-cols-2"
-              label="Carregando palpites…"
-            />
+            <PredictionListSkeleton />
           ) : predictionsQuery.isError ? (
             <ErrorState
               error={predictionsQuery.error}
@@ -93,12 +92,12 @@ export default function PredictionsPage() {
             />
           ) : predictions.length === 0 ? (
             <EmptyState
-              icon={<MessageSquarePlus className="h-10 w-10 text-primary" aria-hidden="true" />}
+              icon={<MessageSquarePlus className="h-10 w-10 text-lime" aria-hidden="true" />}
               title="Nenhum palpite ainda"
               description="Use o formulário para enviar o primeiro palpite."
             />
           ) : (
-            <ul className="grid gap-4 sm:grid-cols-2">
+            <ul className="space-y-3">
               {predictions.map((prediction) => (
                 <li key={prediction.id}>
                   <PredictionCard

@@ -39,7 +39,7 @@ export default function FilterPills<T extends string>({
             className={cn(
               "inline-flex min-h-touch cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
               "border-line bg-surface-raised text-ink-soft hover:border-primary hover:text-ink",
-              "has-[:checked]:border-primary-solid has-[:checked]:bg-primary-solid has-[:checked]:font-semibold has-[:checked]:text-white",
+              "has-[:checked]:border-primary-solid has-[:checked]:bg-primary-solid has-[:checked]:font-semibold has-[:checked]:text-ink-inverse",
               "has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary"
             )}
           >

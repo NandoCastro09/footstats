@@ -10,17 +10,17 @@ export type ButtonVariant =
 export type ButtonSize = "sm" | "md" | "lg";
 
 export const buttonBase =
-  "inline-flex min-h-touch items-center justify-center gap-2 rounded-control font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-raised disabled:text-ink-muted";
+  "inline-flex min-h-touch items-center justify-center gap-2 rounded-full font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-2 disabled:text-muted";
 
 export const buttonVariants: Record<ButtonVariant, string> = {
-  primary: "bg-primary-solid text-white hover:bg-primary-solid-hover",
-  secondary:
-    "border border-primary/60 bg-transparent text-primary hover:border-primary hover:bg-primary-light",
-  // Coral para CTAs: usa o tom escuro (5.7:1 com branco), não o #E8734A.
+  // Lime com texto escuro (15:1).
+  primary: "bg-lime text-ink-inverse hover:bg-primary-solid-hover",
+  secondary: "border border-line-strong bg-transparent text-ink hover:border-lime",
+  // Laranja escuro para CTAs (5.8:1 com branco).
   cta: "bg-live-strong text-white hover:bg-live-dark",
   danger: "bg-danger-solid text-white hover:bg-danger-solid-hover",
-  dangerGhost: "text-danger hover:bg-danger-light",
-  ghost: "text-primary hover:bg-primary-light",
+  dangerGhost: "text-alert-text hover:bg-danger-light",
+  ghost: "text-lime hover:bg-primary-light",
 };
 
 export const buttonSizes: Record<ButtonSize, string> = {
@@ -30,10 +30,10 @@ export const buttonSizes: Record<ButtonSize, string> = {
 };
 
 export const fieldBase =
-  "min-h-touch w-full rounded-control border bg-surface-raised px-3 text-base text-ink placeholder:text-ink-muted disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-ink-muted";
+  "min-h-12 w-full rounded-[10px] border bg-bg px-3.5 text-base text-ink placeholder:text-muted disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted";
 
 export function fieldState(hasError: boolean) {
   return hasError
-    ? "border-2 border-danger"
-    : "border-line-strong hover:border-primary";
+    ? "border-2 border-alert"
+    : "border-line-field hover:border-lime";
 }

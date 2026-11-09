@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, RefreshCw, Save, Send, X } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowRight, Eraser, Minus, Plus, RefreshCw, Save, X } from "lucide-react";
 import Button from "../Button";
 import Input from "../Input";
 import Select from "../Select";
+import TeamCrest from "../TeamCrest";
 import Textarea from "../Textarea";
+import { cn } from "../../lib/cn";
 import { useToast } from "../toast/toastContext";
 import { useCreatePrediction, useMatches, useUpdatePrediction } from "../../hooks/useApi";
 import { formatKickoff } from "../../lib/format";
@@ -44,6 +47,8 @@ function matchLabel(match: Match) {
   return `${match.homeTeam.name} x ${match.awayTeam.name} · Rodada ${match.round} · ${formatKickoff(match.kickoff)}`;
 }
 
+const MAX_GOALS = 20;
+
 function isField(key: string): key is keyof PredictionFormValues {
   return (predictionFields as readonly string[]).includes(key);
 }
@@ -55,12 +60,17 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
   const { code: competition, competition: league } = useLeague();
   const matchesQuery = useMatches({ competition, status: "scheduled" });
   const [formError, setFormError] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const presetMatchId = searchParams.get("partida");
+  const scoreId = useId();
 
   const {
     register,
     handleSubmit,
     setError,
     setFocus,
+    setValue,
+    getValues,
     reset,
     control,
     formState: { errors, isSubmitting, isSubmitted },
@@ -86,6 +96,35 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
       ? [editing.match, ...options]
       : options;
   const selectedMatch = matchOptions.find((match) => match.id === selectedMatchId);
+  const homeGoals = useWatch({ control, name: "homeGoals" });
+  const awayGoals = useWatch({ control, name: "awayGoals" });
+
+  // Veio do botão "Palpitar" (?partida=ID): seleciona a partida quando a lista chegar.
+  const presetAvailable = Boolean(presetMatchId && options.some((match) => match.id === presetMatchId));
+  useEffect(() => {
+    if (!editing && presetMatchId && presetAvailable && !getValues("matchId")) {
+      setValue("matchId", presetMatchId, { shouldDirty: true });
+    }
+  }, [editing, presetMatchId, presetAvailable, getValues, setValue]);
+
+  /** Botões −/+ do placar (o campo continua aceitando digitação). */
+  function stepGoals(name: "homeGoals" | "awayGoals", delta: number) {
+    const current = getValues(name);
+    const base = Number.isFinite(current) ? current : delta > 0 ? 0 : 1;
+    const next = Math.min(MAX_GOALS, Math.max(0, base + delta));
+    setValue(name, next, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+  }
+
+  const homeName = selectedMatch?.homeTeam.name ?? "mandante";
+  const awayName = selectedMatch?.awayTeam.name ?? "visitante";
+  const bothSet = Number.isFinite(homeGoals) && Number.isFinite(awayGoals);
+  const verdict = !bothSet
+    ? null
+    : homeGoals > awayGoals
+      ? `vitória do ${homeName}`
+      : awayGoals > homeGoals
+        ? `vitória do ${awayName}`
+        : "empate";
 
   /** Liga os erros 400/409 do backend aos campos do formulário. */
   function handleServerError(error: unknown) {
@@ -132,19 +171,19 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
       noValidate // usamos nossas próprias mensagens, não os balões do navegador
       aria-labelledby="form-title"
       aria-busy={pending}
-      className="space-y-2"
+      className="space-y-3"
     >
-      <p className="text-sm text-ink-muted">
-        Campos marcados com <span className="font-bold text-danger" aria-hidden="true">*</span>
-        <span className="sr-only">asterisco</span> são obrigatórios.
+      <p className="text-sm text-muted">
+        <span className="font-bold text-lime" aria-hidden="true">*</span> campo obrigatório
+        <span className="sr-only"> (marcado com asterisco)</span>
       </p>
 
       {(formError || (isSubmitted && errorCount > 0)) && (
         <div
           role="alert"
-          className="flex items-start gap-2 rounded-control border border-danger bg-danger-light p-3 text-sm text-ink"
+          className="flex items-start gap-2 rounded-[10px] border-2 border-alert bg-danger-light p-3 text-sm text-ink"
         >
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-hidden="true" />
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-alert-text" aria-hidden="true" />
           <p>
             {formError ??
               `Revise ${errorCount === 1 ? "o campo destacado" : `os ${errorCount} campos destacados`} abaixo.`}
@@ -178,7 +217,7 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
         error={errors.matchId?.message}
         hint={
           matchesQuery.isError ? (
-            <span className="flex flex-wrap items-center gap-2 text-danger">
+            <span className="flex flex-wrap items-center gap-2 text-alert-text">
               Não foi possível carregar as partidas.
               <Button size="sm" variant="ghost" onClick={() => matchesQuery.refetch()}
                 icon={<RefreshCw className="h-4 w-4" aria-hidden="true" />}>
@@ -201,44 +240,134 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
         ))}
       </Select>
 
-      <fieldset className="grid grid-cols-2 gap-x-4">
-        <legend className="mb-2 text-sm font-semibold text-ink">Placar do palpite</legend>
-        <Input
-          label={selectedMatch ? `Gols ${selectedMatch.homeTeam.shortName} (mandante)` : "Gols do mandante"}
-          type="number"
-          inputMode="numeric"
-          min={0}
-          max={20}
-          step={1}
-          required
-          error={errors.homeGoals?.message}
-          {...register("homeGoals", { valueAsNumber: true })}
-        />
-        <Input
-          label={selectedMatch ? `Gols ${selectedMatch.awayTeam.shortName} (visitante)` : "Gols do visitante"}
-          type="number"
-          inputMode="numeric"
-          min={0}
-          max={20}
-          step={1}
-          required
-          error={errors.awayGoals?.message}
-          {...register("awayGoals", { valueAsNumber: true })}
-        />
+      <fieldset className="rounded-2xl border border-line bg-bg p-4 sm:p-5">
+        <legend className="px-1 text-sm font-semibold text-ink">
+          Placar do palpite
+          <span className="text-lime" aria-hidden="true"> *</span>
+        </legend>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 pt-2">
+          {(
+            [
+              { name: "homeGoals", side: "mandante", team: selectedMatch?.homeTeam, value: homeGoals },
+              null,
+              { name: "awayGoals", side: "visitante", team: selectedMatch?.awayTeam, value: awayGoals },
+            ] as const
+          ).map((item) => {
+            if (!item) {
+              return (
+                <span key="x" aria-hidden="true" className="pt-24 font-display text-3xl font-bold text-muted">
+                  ×
+                </span>
+              );
+            }
+            const inputId = `${scoreId}-${item.name}`;
+            const errorId = `${inputId}-error`;
+            const error = errors[item.name]?.message;
+            const teamLabel = item.team ? `${item.team.name} (${item.side})` : item.side;
+            return (
+              <div key={item.name} className="flex min-w-0 flex-col items-center gap-2 text-center">
+                {item.team ? (
+                  <TeamCrest team={item.team} size="md" />
+                ) : (
+                  <span className="h-12 w-12 rounded-full border border-dashed border-line-strong" aria-hidden="true" />
+                )}
+                <label htmlFor={inputId} className="line-clamp-2 min-h-10 text-sm font-semibold text-ink-2">
+                  <span className="sr-only">Gols do </span>
+                  {item.team?.name ?? (item.side === "mandante" ? "Mandante" : "Visitante")}
+                </label>
+                <input
+                  id={inputId}
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={MAX_GOALS}
+                  step={1}
+                  required
+                  placeholder="–"
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={error ? errorId : undefined}
+                  className={cn(
+                    "h-[76px] w-full max-w-[110px] rounded-[10px] border bg-surface text-center font-display text-[64px] font-bold leading-none tabular-nums text-ink placeholder:text-muted",
+                    "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+                    error ? "border-2 border-alert" : "border-line-field hover:border-lime"
+                  )}
+                  {...register(item.name, { valueAsNumber: true })}
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => stepGoals(item.name, -1)}
+                    disabled={!Number.isFinite(item.value) || item.value <= 0}
+                    aria-label={`Diminuir gols do ${teamLabel}`}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line-strong text-ink hover:border-lime disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Minus className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => stepGoals(item.name, 1)}
+                    disabled={Number.isFinite(item.value) && item.value >= MAX_GOALS}
+                    aria-label={`Aumentar gols do ${teamLabel}`}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line-strong text-lime hover:border-lime disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Plus className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </div>
+                <p id={errorId} className="flex min-h-5 items-start gap-1 text-left text-sm font-medium text-alert-text">
+                  {error && (
+                    <>
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                      {error}
+                    </>
+                  )}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+        {/* Anuncia o placar a cada mudança (inclusive pelos botões −/+). */}
+        <p aria-live="polite" className="mt-1 min-h-6 text-center font-semibold text-lime">
+          {bothSet && (
+            <>
+              <span className="sr-only">
+                Placar: {homeName} {homeGoals}, {awayName} {awayGoals}.{" "}
+              </span>
+              Seu palpite: {verdict}
+            </>
+          )}
+        </p>
       </fieldset>
 
       <Textarea
         label="Comentário"
-        hint={`Opcional · ${commentLength}/${COMMENT_MAX} caracteres`}
+        hint={
+          <span className="flex justify-between gap-2">
+            <span>Opcional</span>
+            <span className="tabular-nums">
+              {commentLength}/{COMMENT_MAX}
+              <span className="sr-only"> caracteres</span>
+            </span>
+          </span>
+        }
         maxLength={COMMENT_MAX}
         error={errors.comment?.message}
         {...register("comment")}
       />
 
-      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-        {editing && (
+      <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+        <Button
+          type="submit"
+          loading={pending}
+          className="h-[52px] flex-1 text-base"
+          icon={editing ? <Save className="h-5 w-5" aria-hidden="true" /> : undefined}
+        >
+          {pending ? "Enviando…" : editing ? "Salvar alterações" : "Enviar palpite"}
+          {!pending && !editing && <ArrowRight className="h-5 w-5" aria-hidden="true" />}
+        </Button>
+        {editing ? (
           <Button
             variant="secondary"
+            className="h-[52px]"
             onClick={() => {
               reset(emptyValues);
               onDone();
@@ -248,20 +377,20 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
           >
             Cancelar edição
           </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            className="h-[52px]"
+            onClick={() => {
+              reset(emptyValues);
+              setFormError(null);
+            }}
+            disabled={pending}
+            icon={<Eraser className="h-4 w-4" aria-hidden="true" />}
+          >
+            Limpar
+          </Button>
         )}
-        <Button
-          type="submit"
-          loading={pending}
-          icon={
-            editing ? (
-              <Save className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <Send className="h-4 w-4" aria-hidden="true" />
-            )
-          }
-        >
-          {pending ? "Enviando…" : editing ? "Salvar alterações" : "Enviar palpite"}
-        </Button>
       </div>
     </form>
   );

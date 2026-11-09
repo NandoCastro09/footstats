@@ -14,13 +14,13 @@ const dash = (value: number | null) => (value === null ? "—" : value);
 /** Tabela de artilharia: posição, jogador, (time), gols, assistências, jogos. */
 export default function ScorersTable({ scorers, caption, showTeam = true }: ScorersTableProps) {
   return (
-    <div className="overflow-hidden rounded-card border border-line bg-surface">
+    <div className="overflow-hidden rounded-2xl border border-line bg-surface">
       {/* relative: prende os textos sr-only na área de rolagem (ver LeagueTable). */}
       <div className="relative overflow-x-auto" role="region" aria-label={caption} tabIndex={0}>
         <table className="w-full min-w-[480px] border-collapse text-sm">
           <caption className="sr-only">{caption}</caption>
-          <thead className="bg-surface-raised">
-            <tr className="text-xs uppercase tracking-[0.12em] text-ink-muted">
+          <thead>
+            <tr className="border-b border-line text-xs uppercase tracking-[0.12em] text-muted">
               <th scope="col" className="px-3 py-3 text-center font-semibold">#</th>
               <th scope="col" className="px-3 py-3 text-left font-semibold">Jogador</th>
               {showTeam && <th scope="col" className="px-3 py-3 text-left font-semibold">Time</th>}
@@ -54,7 +54,7 @@ export default function ScorersTable({ scorers, caption, showTeam = true }: Scor
                     </Link>
                   </td>
                 )}
-                <td className="bg-success-light/60 px-3 py-2 text-center font-display text-base font-bold tabular-nums text-success">
+                <td className="px-3 py-2 text-center font-display text-[22px] font-bold tabular-nums text-lime">
                   {scorer.goals}
                 </td>
                 <td className="px-3 py-2 text-center tabular-nums">{dash(scorer.assists)}</td>

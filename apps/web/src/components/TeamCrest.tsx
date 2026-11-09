@@ -40,7 +40,9 @@ export default function TeamCrest({ team, size = "md", className }: TeamCrestPro
       role="img"
       aria-label={alt}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface-raised font-display font-bold text-ink-soft",
+        // Sem imagem: sigla em fonte condensada num círculo (a fonte de dados não
+        // informa as cores dos clubes, então o círculo usa o tom de superfície).
+        "inline-flex shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface-2 font-display font-extrabold uppercase tracking-wide text-ink",
         box,
         className
       )}

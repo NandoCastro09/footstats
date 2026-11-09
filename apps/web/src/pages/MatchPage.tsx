@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
-import Skeleton from "../components/Skeleton";
+import { MatchPageSkeleton } from "../components/skeletons/PageSkeletons";
 import MatchHero from "../components/match/MatchHero";
 import MatchLineups from "../components/match/MatchLineups";
 import MatchStats from "../components/match/MatchStats";
@@ -122,18 +122,7 @@ export default function MatchPage() {
   );
 
   if (isPending) {
-    return (
-      <div
-        role="status"
-        aria-busy="true"
-        className="mx-auto max-w-4xl space-y-6"
-      >
-        <span className="sr-only">Carregando partida…</span>
-        <Skeleton className="h-72 rounded-card" />
-        <Skeleton className="h-28 rounded-card" />
-        <Skeleton className="h-64 rounded-card" />
-      </div>
-    );
+    return <MatchPageSkeleton />;
   }
 
   if (isError) {
