@@ -1,25 +1,99 @@
-﻿import Fastify from "fastify";
+import Fastify, { type FastifyServerOptions } from "fastify";
 import cors from "@fastify/cors";
+import { loadEnv, type Env } from "./config/env.js";
+import { registerErrorHandler } from "./plugins/error-handler.js";
+import { registerSimulation } from "./plugins/simulation.js";
+import { matchesRoutes } from "./modules/matches/matches.routes.js";
+import { predictionsRoutes } from "./modules/predictions/predictions.routes.js";
+import { standingsRoutes } from "./modules/standings/standings.routes.js";
+import { teamsRoutes } from "./modules/teams/teams.routes.js";
+import { scorersRoutes } from "./modules/scorers/scorers.routes.js";
+import { competitionsRoutes } from "./modules/competitions/competitions.routes.js";
+import {
+  createPredictionsService,
+  type PredictionsService,
+} from "./modules/predictions/predictions.service.js";
+import { createDataSource, type DataSource } from "./sources/index.js";
 
-export async function createApp() {
-  const app = Fastify({
-    logger: true,
-  });
+// Disponíveis em todas as rotas como app.dataSource / app.predictions.
+declare module "fastify" {
+  interface FastifyInstance {
+    dataSource: DataSource;
+    predictions: PredictionsService;
+  }
+}
 
+/**
+ * "http://localhost:5173,https://footstats-*.vercel.app" → verificador de origem.
+ * O * aceita só letras, números e hífen (um subdomínio de preview da Vercel).
+ */
+export function createOriginMatcher(list: string) {
+  const patterns = list
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean)
+    .map((origin) => {
+      if (!origin.includes("*")) return origin;
+      const escaped = origin
+        .split("*")
+        .map((part) => part.replace(/[.+?^${}()|[\]\\]/g, "\\$&"))
+        .join("[a-z0-9-]*");
+      return new RegExp(`^${escaped}$`, "i");
+    });
+
+  return (origin: string | undefined) =>
+    // Sem Origin (curl, health check do Render) não é requisição de navegador.
+    !origin ||
+    patterns.some((pattern) =>
+      typeof pattern === "string" ? pattern === origin : pattern.test(origin)
+    );
+}
+
+interface CreateAppOptions {
+  env?: Env;
+  logger?: FastifyServerOptions["logger"];
+  /** Substitui a fonte de dados (usado nos testes). */
+  dataSource?: DataSource;
+}
+
+export async function createApp({
+  env = loadEnv(),
+  logger = true,
+  dataSource,
+}: CreateAppOptions = {}) {
+  const app = Fastify({ logger });
+
+  const source = dataSource ?? createDataSource(env, app.log);
+  app.decorate("dataSource", source);
+  app.decorate("predictions", createPredictionsService(source));
+
+  const isAllowedOrigin = createOriginMatcher(env.CORS_ORIGIN);
   await app.register(cors, {
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   });
 
-  app.get("/health", async () => {
-    return { status: "ok", timestamp: new Date().toISOString() };
-  });
+  registerErrorHandler(app);
+  registerSimulation(app);
 
-  app.get("/api/leagues", async () => {
-    return { 
-      data: [],
-      message: "Placeholder - dados virão do Sportmonks"
-    };
-  });
+  app.get("/health", async () => ({
+    status: "ok",
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+    dataSource: app.dataSource.info(),
+  }));
+
+  await app.register(
+    async (api) => {
+      await api.register(competitionsRoutes);
+      await api.register(matchesRoutes);
+      await api.register(standingsRoutes);
+      await api.register(teamsRoutes);
+      await api.register(scorersRoutes);
+      await api.register(predictionsRoutes);
+    },
+    { prefix: "/api" }
+  );
 
   return app;
 }
