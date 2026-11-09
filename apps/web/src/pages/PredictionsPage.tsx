@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { MessageSquarePlus } from "lucide-react";
+import { List, MessageSquarePlus } from "lucide-react";
+import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import Modal from "../components/Modal";
@@ -14,6 +15,9 @@ import { useLeague } from "../league/leagueContext";
 import { ApiError } from "../services/api";
 import type { Prediction } from "../types";
 
+// Quantos palpites aparecem direto na página; o resto fica no modal "Ver todos".
+const VISIBLE_PREDICTIONS = 3;
+
 export default function PredictionsPage() {
   usePageTitle("Palpites");
   const toast = useToast();
@@ -23,6 +27,7 @@ export default function PredictionsPage() {
 
   const [editing, setEditing] = useState<Prediction | null>(null);
   const [toDelete, setToDelete] = useState<Prediction | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   function confirmDelete() {
     if (!toDelete) return;
@@ -43,6 +48,25 @@ export default function PredictionsPage() {
   }
 
   const predictions = predictionsQuery.data ?? [];
+  const visible = predictions.slice(0, VISIBLE_PREDICTIONS);
+  const hidden = predictions.length - visible.length;
+
+  // Editar a partir do modal: fecha a lista e leva o foco para o formulário.
+  function editFromModal(prediction: Prediction) {
+    setShowAll(false);
+    setEditing(prediction);
+  }
+
+  const renderCard = (prediction: Prediction, onEdit: (prediction: Prediction) => void) => (
+    <li key={prediction.id}>
+      <PredictionCard
+        prediction={prediction}
+        isEditing={editing?.id === prediction.id}
+        onEdit={onEdit}
+        onDelete={setToDelete}
+      />
+    </li>
+  );
 
   return (
     <div className="space-y-10">
@@ -96,21 +120,38 @@ export default function PredictionsPage() {
               description="Use o formulário para enviar o primeiro palpite."
             />
           ) : (
-            <ul className="space-y-3">
-              {predictions.map((prediction) => (
-                <li key={prediction.id}>
-                  <PredictionCard
-                    prediction={prediction}
-                    isEditing={editing?.id === prediction.id}
-                    onEdit={setEditing}
-                    onDelete={setToDelete}
-                  />
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-3">{visible.map((prediction) => renderCard(prediction, setEditing))}</ul>
+              {hidden > 0 && (
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => setShowAll(true)}
+                  icon={<List className="h-4 w-4" aria-hidden="true" />}
+                >
+                  Ver todos os {predictions.length} palpites
+                </Button>
+              )}
+            </>
           )}
         </section>
       </div>
+
+      <Modal
+        isOpen={showAll}
+        title={`Palpites enviados (${predictions.length})`}
+        onClose={() => setShowAll(false)}
+        cancelText="Fechar"
+        size="xl"
+      >
+        {predictions.length === 0 ? (
+          <p className="text-ink-muted">Nenhum palpite ainda.</p>
+        ) : (
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {predictions.map((prediction) => renderCard(prediction, editFromModal))}
+          </ul>
+        )}
+      </Modal>
 
       <Modal
         isOpen={toDelete !== null}

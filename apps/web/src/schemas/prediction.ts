@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isValidEmail } from "../lib/email";
+import { isValidEmail, suggestEmail } from "../lib/email";
 
 const goals = (side: string) =>
   z
@@ -23,12 +23,18 @@ export const predictionSchema = z.object({
     .trim()
     .min(1, "Informe seu e-mail.")
     .email("Informe um e-mail válido.")
+    .refine((value) => !suggestEmail(value), (value) => ({
+      message: `Confira o e-mail. Você quis dizer ${suggestEmail(value)}?`,
+    }))
     .refine(isValidEmail, "Informe um e-mail válido."),
   matchId: z.string().min(1, "Selecione uma partida."),
   homeGoals: goals("mandante"),
   awayGoals: goals("visitante"),
   comment: z.string().trim().max(280, "O comentário pode ter no máximo 280 caracteres."),
 });
+
+// Na edição o e-mail fica travado (o front só conhece a versão mascarada) e não é enviado.
+export const predictionEditSchema = predictionSchema.extend({ email: z.string() });
 
 export type PredictionFormValues = z.infer<typeof predictionSchema>;
 

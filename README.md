@@ -207,6 +207,12 @@ URL base: `http://localhost:3000` (local) ou a URL do Render (produção).
 }
 ```
 
+No `PUT`, o `email` é opcional: se não vier, a API mantém o que já está salvo.
+
+**Privacidade:** as respostas nunca trazem o e-mail completo. No lugar dele vem
+`"emailMasked": "an•••@example.com"`. O e-mail completo fica só no servidor, para a regra de
+um palpite por e-mail em cada partida.
+
 **Formato de sucesso:** `{ "data": ... }`
 
 **Formato de erro** (o mesmo em todas as rotas):

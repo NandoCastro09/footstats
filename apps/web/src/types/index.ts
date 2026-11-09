@@ -153,7 +153,8 @@ export interface Team extends TeamSummary {
 export interface Prediction {
   id: string;
   name: string;
-  email: string;
+  /** A API nunca devolve o e-mail completo, só algo como "an•••@example.com". */
+  emailMasked: string;
   matchId: string;
   homeGoals: number;
   awayGoals: number;
@@ -172,8 +173,11 @@ export interface DataSourceInfo {
 
 export type PredictionInput = Pick<
   Prediction,
-  "name" | "email" | "matchId" | "homeGoals" | "awayGoals" | "comment"
->;
+  "name" | "matchId" | "homeGoals" | "awayGoals" | "comment"
+> & { email: string };
+
+/** Na edição o e-mail não é enviado: a API mantém o que já está salvo. */
+export type PredictionUpdateInput = Omit<PredictionInput, "email"> & { email?: string };
 
 export interface ApiErrorBody {
   error: string;

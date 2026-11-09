@@ -7,6 +7,7 @@ import type {
   MatchStatus,
   Prediction,
   PredictionInput,
+  PredictionUpdateInput,
   Scorer,
   Standing,
   Team,
@@ -153,7 +154,7 @@ export const api = {
         method: "POST",
         body: JSON.stringify(input),
       }),
-    update: (id: string, input: PredictionInput) =>
+    update: (id: string, input: PredictionUpdateInput) =>
       request<Prediction>(`/api/predictions/${encodeURIComponent(id)}`, {
         method: "PUT",
         body: JSON.stringify(input),

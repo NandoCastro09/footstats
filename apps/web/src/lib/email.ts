@@ -32,6 +32,41 @@ const EXACT_DOMAINS: Record<string, string[]> = {
   icloud: ["icloud.com"],
 };
 
+// Erros de digitação comuns ("gmial", "hotmai", "outlok"): até 1 letra trocada, faltando,
+// sobrando ou invertida em relação a um provedor grande.
+const TYPO_TARGETS = ["gmail", "hotmail", "outlook", "yahoo", "icloud"];
+// Domínios reais parecidos com os de cima, que não podem virar sugestão.
+const REAL_LOOKALIKES = new Set(["mail", "email", "ymail", "cloud"]);
+
+function isOneEditAway(a: string, b: string): boolean {
+  if (a === b || Math.abs(a.length - b.length) > 1) return false;
+  if (a.length === b.length) {
+    const diff = [...a].flatMap((ch, i) => (ch === b[i] ? [] : [i]));
+    if (diff.length === 1) return true;
+    // Letras vizinhas invertidas: "gmial" → "gmail".
+    const [i, j] = diff;
+    return diff.length === 2 && j === i + 1 && a[i] === b[j] && a[j] === b[i];
+  }
+  const [short, long] = a.length < b.length ? [a, b] : [b, a];
+  for (let i = 0; i < long.length; i++) {
+    if (long.slice(0, i) + long.slice(i + 1) === short) return true;
+  }
+  return false;
+}
+
+// "teste@gmial.com" → "teste@gmail.com"; null quando não parece erro de digitação.
+export function suggestEmail(value: string): string | null {
+  const email = value.trim().toLowerCase();
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return null;
+  const [provider, ...rest] = domain.split(".");
+  if (KNOWN_PROVIDERS.has(provider) || REAL_LOOKALIKES.has(provider)) return null;
+  const target = TYPO_TARGETS.find((name) => isOneEditAway(provider, name));
+  if (!target) return null;
+  const fixed = EXACT_DOMAINS[target]?.[0] ?? [target, ...rest].join(".");
+  return `${local}@${fixed}`;
+}
+
 export function isValidEmail(value: string): boolean {
   const email = value.trim().toLowerCase();
   if (email.length > 254 || !EMAIL_RE.test(email)) return false;

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type MatchFilters, type ScorerFilters } from "../services/api";
-import type { PredictionInput } from "../types";
+import type { PredictionInput, PredictionUpdateInput } from "../types";
 
 // Chaves do cache do React Query: mesma chave = mesmo dado em cache.
 export const queryKeys = {
@@ -83,7 +83,7 @@ export function useCreatePrediction() {
 export function useUpdatePrediction() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: PredictionInput }) =>
+    mutationFn: ({ id, input }: { id: string; input: PredictionUpdateInput }) =>
       api.predictions.update(id, input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.predictions }),
   });

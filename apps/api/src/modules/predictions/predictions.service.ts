@@ -1,15 +1,15 @@
 import { randomUUID } from "node:crypto";
-import type { Prediction, PredictionRecord } from "../../types.js";
+import type { Match, Prediction, PredictionRecord } from "../../types.js";
 import type { DataSource } from "../../sources/types.js";
 import { predictionsSeed } from "../../data/predictions.js";
 import { DEFAULT_COMPETITION } from "../../data/competitions.js";
+import { maskEmail } from "../../lib/email.js";
 import { conflict, notFound, validationError } from "../../lib/errors.js";
-import type { PredictionInput } from "./predictions.schemas.js";
+import type { PredictionInput, PredictionUpdateInput } from "./predictions.schemas.js";
 
 export type PredictionsService = ReturnType<typeof createPredictionsService>;
 
 export function createPredictionsService(source: DataSource) {
-  // Sem banco de dados: os palpites ficam em memória (somem quando a API reinicia).
   const store = new Map<string, PredictionRecord>();
   let seeding: Promise<void> | null = null;
 
@@ -29,13 +29,15 @@ export function createPredictionsService(source: DataSource) {
     return seeding;
   }
 
-  async function withMatch(record: PredictionRecord): Promise<Prediction | null> {
-    const match = await source.findMatch(record.matchId);
-    return match ? { ...record, match } : null;
+  function toPublic({ email, ...record }: PredictionRecord, match: Match): Prediction {
+    return { ...record, emailMasked: maskEmail(email), match };
   }
 
-  // Regras de negócio: a partida precisa existir, não pode ter começado
-  // e cada e-mail só pode ter um palpite por partida (409 Conflict).
+  async function withMatch(record: PredictionRecord): Promise<Prediction | null> {
+    const match = await source.findMatch(record.matchId);
+    return match ? toPublic(record, match) : null;
+  }
+
   async function assertValid(input: PredictionInput, ignoreId?: string) {
     const match = await source.findMatch(input.matchId);
     if (!match) {
@@ -74,17 +76,18 @@ export function createPredictionsService(source: DataSource) {
       const now = new Date().toISOString();
       const record: PredictionRecord = { id: randomUUID(), ...input, createdAt: now, updatedAt: now };
       store.set(record.id, record);
-      return { ...record, match };
+      return toPublic(record, match);
     },
 
-    async update(id: string, input: PredictionInput): Promise<Prediction> {
+    async update(id: string, input: PredictionUpdateInput): Promise<Prediction> {
       await ensureSeeded();
       const current = store.get(id);
       if (!current) throw notFound(`Palpite "${id}" não encontrado.`);
-      const match = await assertValid(input, id);
-      const record: PredictionRecord = { ...current, ...input, updatedAt: new Date().toISOString() };
+      const merged: PredictionInput = { ...input, email: input.email ?? current.email };
+      const match = await assertValid(merged, id);
+      const record: PredictionRecord = { ...current, ...merged, updatedAt: new Date().toISOString() };
       store.set(id, record);
-      return { ...record, match };
+      return toPublic(record, match);
     },
 
     async remove(id: string) {

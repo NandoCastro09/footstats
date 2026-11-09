@@ -169,6 +169,8 @@ export interface PredictionRecord {
   updatedAt: string;
 }
 
-export interface Prediction extends PredictionRecord {
+// O que a API devolve: o e-mail completo nunca sai do servidor, só a versão mascarada.
+export interface Prediction extends Omit<PredictionRecord, "email"> {
+  emailMasked: string;
   match: Match;
 }

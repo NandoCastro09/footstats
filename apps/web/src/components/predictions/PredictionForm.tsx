@@ -16,6 +16,7 @@ import { useLeague } from "../../league/leagueContext";
 import {
   COMMENT_MAX,
   predictionFields,
+  predictionEditSchema,
   predictionSchema,
   type PredictionFormValues,
 } from "../../schemas/prediction";
@@ -27,18 +28,18 @@ interface PredictionFormProps {
   onDone: () => void;
 }
 
-const emptyValues = {
+const emptyValues: PredictionFormValues = {
   name: "",
   email: "",
   matchId: "",
-  homeGoals: undefined,
-  awayGoals: undefined,
+  homeGoals: 0,
+  awayGoals: 0,
   comment: "",
-} as unknown as PredictionFormValues;
+};
 
 function toFormValues(prediction: Prediction): PredictionFormValues {
-  const { name, email, matchId, homeGoals, awayGoals, comment } = prediction;
-  return { name, email, matchId, homeGoals, awayGoals, comment };
+  const { name, matchId, homeGoals, awayGoals, comment } = prediction;
+  return { name, email: "", matchId, homeGoals, awayGoals, comment };
 }
 
 function matchLabel(match: Match) {
@@ -73,7 +74,7 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
     control,
     formState: { errors, isSubmitting, isSubmitted },
   } = useForm<PredictionFormValues>({
-    resolver: zodResolver(predictionSchema),
+    resolver: zodResolver(editing ? predictionEditSchema : predictionSchema),
     defaultValues: editing ? toFormValues(editing) : emptyValues,
     mode: "onTouched",
   });
@@ -146,7 +147,8 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
     setFormError(null);
     try {
       if (editing) {
-        await updateMutation.mutateAsync({ id: editing.id, input: values });
+        // Sem o e-mail: a API mantém o que já está salvo.
+        await updateMutation.mutateAsync({ id: editing.id, input: { ...values, email: undefined } });
         toast.success("Palpite atualizado", `${values.name}, seu palpite foi salvo.`);
       } else {
         await createMutation.mutateAsync(values);
@@ -192,18 +194,29 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
           label="Nome"
           required
           autoComplete="name"
+          maxLength={60}
           error={errors.name?.message}
           {...register("name")}
         />
-        <Input
-          label="E-mail"
-          type="email"
-          required
-          autoComplete="email"
-          inputMode="email"
-          error={errors.email?.message}
-          {...register("email")}
-        />
+        {editing ? (
+          <Input
+            label="E-mail"
+            value={editing.emailMasked}
+            disabled
+            readOnly
+            title="O e-mail não muda na edição."
+          />
+        ) : (
+          <Input
+            label="E-mail"
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            error={errors.email?.message}
+            {...register("email")}
+          />
+        )}
       </div>
 
       <Select
@@ -236,101 +249,105 @@ export default function PredictionForm({ editing, onDone }: PredictionFormProps)
         ))}
       </Select>
 
-      <fieldset className="rounded-2xl border border-line bg-bg p-4 sm:p-5">
-        <legend className="px-1 text-sm font-semibold text-ink">
+      {/* Título fora da caixa, igual aos outros campos (legend dentro de borda arredondada corta a linha). */}
+      <fieldset className="min-w-0">
+        <legend className="mb-1.5 text-sm font-semibold text-ink">
           Placar do palpite
           <span className="text-lime" aria-hidden="true"> *</span>
         </legend>
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 pt-2">
-          {(
-            [
-              { name: "homeGoals", side: "mandante", team: selectedMatch?.homeTeam, value: homeGoals },
-              null,
-              { name: "awayGoals", side: "visitante", team: selectedMatch?.awayTeam, value: awayGoals },
-            ] as const
-          ).map((item) => {
-            if (!item) {
+        <div className="rounded-2xl border border-line bg-bg p-4 sm:p-5">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
+            {(
+              [
+                { name: "homeGoals", side: "mandante", team: selectedMatch?.homeTeam, value: homeGoals },
+                null,
+                { name: "awayGoals", side: "visitante", team: selectedMatch?.awayTeam, value: awayGoals },
+              ] as const
+            ).map((item) => {
+              if (!item) {
+                return (
+                  // 124px = escudo (48) + espaço (8) + nome (40) + espaço (8) + metade do campo (38) − metade do "×" (18).
+                  <span key="x" aria-hidden="true" className="pt-[124px] font-display text-3xl font-bold leading-9 text-muted">
+                    ×
+                  </span>
+                );
+              }
+              const inputId = `${scoreId}-${item.name}`;
+              const errorId = `${inputId}-error`;
+              const error = errors[item.name]?.message;
+              const teamLabel = item.team ? `${item.team.name} (${item.side})` : item.side;
               return (
-                <span key="x" aria-hidden="true" className="pt-24 font-display text-3xl font-bold text-muted">
-                  ×
-                </span>
-              );
-            }
-            const inputId = `${scoreId}-${item.name}`;
-            const errorId = `${inputId}-error`;
-            const error = errors[item.name]?.message;
-            const teamLabel = item.team ? `${item.team.name} (${item.side})` : item.side;
-            return (
-              <div key={item.name} className="flex min-w-0 flex-col items-center gap-2 text-center">
-                {item.team ? (
-                  <TeamCrest team={item.team} size="md" />
-                ) : (
-                  <span className="h-12 w-12 rounded-full border border-dashed border-line-strong" aria-hidden="true" />
-                )}
-                <label htmlFor={inputId} className="line-clamp-2 min-h-10 text-sm font-semibold text-ink-2">
-                  <span className="sr-only">Gols do </span>
-                  {item.team?.name ?? (item.side === "mandante" ? "Mandante" : "Visitante")}
-                </label>
-                <input
-                  id={inputId}
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={MAX_GOALS}
-                  step={1}
-                  required
-                  placeholder="–"
-                  aria-invalid={error ? true : undefined}
-                  aria-describedby={error ? errorId : undefined}
-                  className={cn(
-                    "h-[76px] w-full max-w-[110px] rounded-[10px] border bg-surface text-center font-display text-[64px] font-bold leading-none tabular-nums text-ink placeholder:text-muted",
-                    "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
-                    error ? "border-2 border-alert" : "border-line-field hover:border-lime"
+                <div key={item.name} className="flex min-w-0 flex-col items-center gap-2 text-center">
+                  {item.team ? (
+                    <TeamCrest team={item.team} size="md" />
+                  ) : (
+                    <span className="h-12 w-12 rounded-full border border-dashed border-line-strong" aria-hidden="true" />
                   )}
-                  {...register(item.name, { valueAsNumber: true })}
-                />
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => stepGoals(item.name, -1)}
-                    disabled={!Number.isFinite(item.value) || item.value <= 0}
-                    aria-label={`Diminuir gols do ${teamLabel}`}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line-strong text-ink hover:border-lime disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Minus className="h-5 w-5" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => stepGoals(item.name, 1)}
-                    disabled={Number.isFinite(item.value) && item.value >= MAX_GOALS}
-                    aria-label={`Aumentar gols do ${teamLabel}`}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line-strong text-lime hover:border-lime disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Plus className="h-5 w-5" aria-hidden="true" />
-                  </button>
+                  <label htmlFor={inputId} className="line-clamp-2 min-h-10 text-sm font-semibold text-ink-2">
+                    <span className="sr-only">Gols do </span>
+                    {item.team?.name ?? (item.side === "mandante" ? "Mandante" : "Visitante")}
+                  </label>
+                  <input
+                    id={inputId}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={MAX_GOALS}
+                    step={1}
+                    required
+                    placeholder="0"
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error ? errorId : undefined}
+                    className={cn(
+                      "h-[76px] w-full max-w-[110px] rounded-[10px] border bg-surface text-center font-display text-[64px] font-bold leading-none tabular-nums text-ink placeholder:text-muted",
+                      "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+                      error ? "border-2 border-alert" : "border-line-field hover:border-lime"
+                    )}
+                    {...register(item.name, { valueAsNumber: true })}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => stepGoals(item.name, -1)}
+                      disabled={!Number.isFinite(item.value) || item.value <= 0}
+                      aria-label={`Diminuir gols do ${teamLabel}`}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line-strong text-ink hover:border-lime disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <Minus className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stepGoals(item.name, 1)}
+                      disabled={Number.isFinite(item.value) && item.value >= MAX_GOALS}
+                      aria-label={`Aumentar gols do ${teamLabel}`}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line-strong text-lime hover:border-lime disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <Plus className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <p id={errorId} className="flex min-h-5 items-start gap-1 text-left text-sm font-medium text-alert-text">
+                    {error && (
+                      <>
+                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                        {error}
+                      </>
+                    )}
+                  </p>
                 </div>
-                <p id={errorId} className="flex min-h-5 items-start gap-1 text-left text-sm font-medium text-alert-text">
-                  {error && (
-                    <>
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                      {error}
-                    </>
-                  )}
-                </p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          <p aria-live="polite" className="mt-1 min-h-6 text-center font-semibold text-lime">
+            {bothSet && (
+              <>
+                <span className="sr-only">
+                  Placar: {homeName} {homeGoals}, {awayName} {awayGoals}.{" "}
+                </span>
+                Seu palpite: {verdict}
+              </>
+            )}
+          </p>
         </div>
-        <p aria-live="polite" className="mt-1 min-h-6 text-center font-semibold text-lime">
-          {bothSet && (
-            <>
-              <span className="sr-only">
-                Placar: {homeName} {homeGoals}, {awayName} {awayGoals}.{" "}
-              </span>
-              Seu palpite: {verdict}
-            </>
-          )}
-        </p>
       </fieldset>
 
       <Textarea

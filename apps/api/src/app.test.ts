@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createApp, createOriginMatcher } from "./app.js";
 import type { Match, MatchDetails, Prediction, Standing, Team } from "./types.js";
+import { predictionsSeed } from "./data/predictions.js";
 
 let app: FastifyInstance;
 
@@ -224,7 +225,8 @@ describe("predictions CRUD", () => {
     const created = await app.inject({ method: "POST", url: "/api/predictions", payload: validBody(matchId) });
     expect(created.statusCode).toBe(201);
     const prediction: Prediction = created.json().data;
-    expect(prediction.email).toBe("nando@example.com");
+    expect(prediction.emailMasked).toBe("na•••@example.com");
+    expect(prediction).not.toHaveProperty("email");
 
     const updated = await app.inject({
       method: "PUT",
@@ -280,12 +282,40 @@ describe("predictions CRUD", () => {
     expect(created.json().details.matchId).toBeDefined();
   });
 
+  it("nunca devolve o e-mail completo na listagem", async () => {
+    const res = await app.inject({ url: "/api/predictions" });
+    for (const seed of predictionsSeed) expect(res.body).not.toContain(seed.email);
+    expect(res.json().data[0].emailMasked).toMatch(/^.{1,2}•••@/);
+  });
+
+  it("PUT sem e-mail mantém o e-mail salvo", async () => {
+    const matchId = await freeScheduledMatchId();
+    const created: Prediction = (
+      await app.inject({ method: "POST", url: "/api/predictions", payload: validBody(matchId) })
+    ).json().data;
+    const { email: _omit, ...withoutEmail } = validBody(matchId);
+    const updated = await app.inject({
+      method: "PUT",
+      url: `/api/predictions/${created.id}`,
+      payload: { ...withoutEmail, homeGoals: 4 },
+    });
+    expect(updated.statusCode).toBe(200);
+    expect(updated.json().data.emailMasked).toBe("na•••@example.com");
+
+    // O e-mail mantido ainda conta para a regra de um palpite por partida.
+    const duplicate = await app.inject({ method: "POST", url: "/api/predictions", payload: validBody(matchId) });
+    expect(duplicate.statusCode).toBe(409);
+  });
+
   it("409 para palpite duplicado (mesmo e-mail e partida)", async () => {
     const [seed]: Prediction[] = (await app.inject({ url: "/api/predictions" })).json().data;
     const res = await app.inject({
       method: "POST",
       url: "/api/predictions",
-      payload: { ...validBody(seed.matchId), email: seed.email.toUpperCase() },
+      payload: {
+        ...validBody(seed.matchId),
+        email: predictionsSeed.find((s) => s.id === seed.id)!.email.toUpperCase(),
+      },
     });
     expect(res.statusCode).toBe(409);
     expect(res.json().error).toBe("CONFLICT");

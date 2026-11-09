@@ -35,12 +35,6 @@ export function formatDateTime(iso: string) {
   return dateTimeShortFormatter.format(new Date(iso));
 }
 
-export function maskEmail(email: string) {
-  const [user, domain] = email.split("@");
-  if (!domain) return email;
-  return `${user.slice(0, 2)}•••@${domain}`;
-}
-
 export function formatGoalDifference(value: number) {
   return value > 0 ? `+${value}` : String(value);
 }

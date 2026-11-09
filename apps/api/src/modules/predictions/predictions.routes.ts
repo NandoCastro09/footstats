@@ -3,6 +3,7 @@ import {
   predictionBodySchema,
   predictionParamsSchema,
   predictionsQuerySchema,
+  predictionUpdateSchema,
 } from "./predictions.schemas.js";
 
 export async function predictionsRoutes(app: FastifyInstance) {
@@ -19,7 +20,7 @@ export async function predictionsRoutes(app: FastifyInstance) {
 
   app.put("/predictions/:id", async (request) => {
     const { id } = predictionParamsSchema.parse(request.params);
-    const input = predictionBodySchema.parse(request.body);
+    const input = predictionUpdateSchema.parse(request.body);
     return { data: await app.predictions.update(id, input) };
   });
 

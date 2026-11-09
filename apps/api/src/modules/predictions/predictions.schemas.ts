@@ -1,5 +1,16 @@
 import { z } from "zod";
-import { isValidEmail } from "../../lib/email.js";
+import { isValidEmail, suggestEmail } from "../../lib/email.js";
+
+const email = z
+  .string({ required_error: "Informe seu e-mail." })
+  .trim()
+  .toLowerCase()
+  .min(1, "Informe seu e-mail.")
+  .email("Informe um e-mail válido.")
+  .refine((value) => !suggestEmail(value), (value) => ({
+    message: `Confira o e-mail. Você quis dizer ${suggestEmail(value)}?`,
+  }))
+  .refine(isValidEmail, "Informe um e-mail válido.");
 
 const goals = (side: string) =>
   z
@@ -19,13 +30,7 @@ export const predictionBodySchema = z.object(
       .min(1, "Informe seu nome.")
       .min(2, "O nome precisa ter pelo menos 2 caracteres.")
       .max(60, "O nome pode ter no máximo 60 caracteres."),
-    email: z
-      .string({ required_error: "Informe seu e-mail." })
-      .trim()
-      .toLowerCase()
-      .min(1, "Informe seu e-mail.")
-      .email("Informe um e-mail válido.")
-      .refine(isValidEmail, "Informe um e-mail válido."),
+    email,
     matchId: z
       .string({ required_error: "Selecione uma partida." })
       .min(1, "Selecione uma partida."),
@@ -44,6 +49,10 @@ export const predictionBodySchema = z.object(
   }
 );
 
+// Na edição o e-mail é opcional: se não vier, a API mantém o que já está salvo
+// (o front não tem o e-mail completo para reenviar, só a versão mascarada).
+export const predictionUpdateSchema = predictionBodySchema.extend({ email: email.optional() });
+
 export const predictionParamsSchema = z.object({ id: z.string().min(1) });
 
 export const predictionsQuerySchema = z.object({
@@ -51,3 +60,4 @@ export const predictionsQuerySchema = z.object({
 });
 
 export type PredictionInput = z.infer<typeof predictionBodySchema>;
+export type PredictionUpdateInput = z.infer<typeof predictionUpdateSchema>;

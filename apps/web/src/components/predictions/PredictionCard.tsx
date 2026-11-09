@@ -2,7 +2,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import Button from "../Button";
 import TeamCrest from "../TeamCrest";
 import { cn } from "../../lib/cn";
-import { formatDateTime, formatKickoff, maskEmail } from "../../lib/format";
+import { formatDateTime, formatKickoff } from "../../lib/format";
 import { useLeague } from "../../league/leagueContext";
 import type { Prediction } from "../../types";
 
@@ -93,7 +93,7 @@ export default function PredictionCard({
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2">
         <p className="min-w-0 text-xs text-muted">
-          <span className="font-semibold text-ink-2">{prediction.name}</span> · {maskEmail(prediction.email)}
+          <span className="font-semibold text-ink-2">{prediction.name}</span> · {prediction.emailMasked}
           <span className="block">
             {edited ? "Editado em " : "Enviado em "}
             <time dateTime={edited ? prediction.updatedAt : prediction.createdAt}>

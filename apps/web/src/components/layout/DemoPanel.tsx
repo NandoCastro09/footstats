@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import { FlaskConical } from "lucide-react";
 import { cn } from "../../lib/cn";
 import {
@@ -27,9 +27,21 @@ export default function DemoPanel() {
   const errorId = useId();
   const delayId = useId();
   const active = settings.error !== "off" || settings.delay > 0;
+  // Abre sozinho quando há simulação ativa, mas só fecha quando a pessoa clica
+  // (antes fechava ao desligar a simulação, no meio do ajuste).
+  const [open, setOpen] = useState(active);
+  const [wasActive, setWasActive] = useState(active);
+  if (active !== wasActive) {
+    setWasActive(active);
+    if (active) setOpen(true);
+  }
 
   return (
-    <details className="rounded-card border border-line bg-surface" open={active}>
+    <details
+      className="rounded-card border border-line bg-surface"
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
       <summary className="flex min-h-touch cursor-pointer items-center gap-2 px-4 font-medium text-ink">
         <FlaskConical className="h-4 w-4 text-primary" aria-hidden="true" />
         Modo demonstração

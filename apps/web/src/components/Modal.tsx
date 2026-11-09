@@ -15,7 +15,7 @@ interface ModalProps {
   cancelText?: string;
   confirmVariant?: ButtonVariant;
   confirmLoading?: boolean;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 const FOCUSABLE =
@@ -25,7 +25,12 @@ const sizeStyles = {
   sm: "max-w-sm",
   md: "max-w-md",
   lg: "max-w-lg",
+  xl: "max-w-3xl",
 };
+
+// Modais abertos, do mais antigo ao mais novo. Só o do topo responde ao teclado,
+// para um modal aberto por cima de outro (ex.: confirmar exclusão) não fechar os dois no Esc.
+const openStack: HTMLElement[] = [];
 
 export default function Modal({
   isOpen,
@@ -55,6 +60,8 @@ export default function Modal({
     const focusables = () =>
       Array.from(dialog?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
 
+    if (dialog) openStack.push(dialog);
+
     const initial =
       dialog?.querySelector<HTMLElement>("[data-autofocus]") ?? focusables()[0];
     (initial ?? dialog)?.focus();
@@ -63,6 +70,7 @@ export default function Modal({
     document.body.style.overflow = "hidden";
 
     function handleKeyDown(event: KeyboardEvent) {
+      if (openStack[openStack.length - 1] !== dialog) return;
       if (event.key === "Escape") {
         event.preventDefault();
         onCloseRef.current();
@@ -90,7 +98,11 @@ export default function Modal({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = overflow;
-      previouslyFocused?.focus();
+      const index = dialog ? openStack.indexOf(dialog) : -1;
+      if (index !== -1) openStack.splice(index, 1);
+      // O elemento que abriu o modal pode ter sumido (ex.: card excluído); aí volta para o modal de baixo.
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+      else openStack[openStack.length - 1]?.focus();
     };
   }, [isOpen]);
 
@@ -111,11 +123,11 @@ export default function Modal({
         aria-describedby={bodyId}
         tabIndex={-1}
         className={cn(
-          "relative w-full overflow-hidden rounded-panel border border-line bg-surface shadow-2xl",
+          "relative flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-panel border border-line bg-surface shadow-2xl",
           sizeStyles[size]
         )}
       >
-        <div className="flex items-center justify-between gap-4 border-b border-line px-6 py-4">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-line px-6 py-4">
           <h2 id={titleId} className="text-xl font-bold text-ink">
             {title}
           </h2>
@@ -129,11 +141,11 @@ export default function Modal({
           </button>
         </div>
 
-        <div id={bodyId} className="px-6 py-5 text-ink">
+        <div id={bodyId} className="min-h-0 overflow-y-auto px-6 py-5 text-ink">
           {children}
         </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-line bg-surface-raised px-6 py-4 sm:flex-row sm:justify-end">
+        <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-line bg-surface-raised px-6 py-4 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onClose} data-autofocus>
             {cancelText}
           </Button>
